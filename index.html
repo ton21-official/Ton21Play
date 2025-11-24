@@ -6,14 +6,327 @@
   <title>Ton21 Slot Machine</title>
   <meta name="color-scheme" content="dark light">
 
-  <!-- ЧАСТЬ 2: СЮДА ВСТАВИМ CSS -->
+  <!-- TonPlay SDK (опционально; если нет — будет фейковый 30 сек таймер) -->
+  <script src="https://sdk.tonplay.io/sdk.js"></script>
+
   <style>
-    /* ==== PART 2 (CSS) WILL BE INSERTED HERE ==== */
+    :root{
+      --bg:#050811;
+      --panel:#111724;
+      --gold1:#ffdf88;
+      --gold2:#f0cf6d;
+      --txt:#e8ecf7;
+      --muted:#9fb0c3;
+      --danger:#ff547a;
+      --success:#32d47b;
+    }
+
+    *{ box-sizing:border-box }
+    html,body{ height:100% }
+
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif;
+      background:radial-gradient(1200px 700px at 50% -10%,#1b2232 0%,#050811 55%,#02040a 100%);
+      color:var(--txt);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:8px;
+    }
+
+    .app{
+      width:100%;
+      max-width:480px;
+      background:linear-gradient(145deg,#0b101d 0%,#050811 40%,#0d1424 100%);
+      border-radius:18px;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,.04),
+        0 24px 70px rgba(0,0,0,.95);
+      padding:18px 16px 20px;
+    }
+
+    .title{
+      text-align:center;
+      font-size:22px;
+      font-weight:700;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      margin-top:12px;
+    }
+    .subtitle{
+      text-align:center;
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:14px;
+    }
+
+    .lang-switch{
+      display:flex;
+      justify-content:center;
+      gap:6px;
+      margin-bottom:10px;
+    }
+    .lang-btn{
+      border:none;
+      padding:6px 10px;
+      border-radius:8px;
+      font-size:11px;
+      background:#141829;
+      color:var(--muted);
+      cursor:pointer;
+      transition:0.12s;
+    }
+    .lang-btn.active{
+      background:linear-gradient(135deg,var(--gold1),var(--gold2));
+      color:#241303;
+      font-weight:600;
+      box-shadow:0 0 0 1px rgba(148,95,14,.7);
+    }
+
+    .address-block{
+      margin-bottom:12px;
+      padding:8px 10px;
+      border-radius:12px;
+      background:#090d16;
+      border:1px solid rgba(255,255,255,.06);
+    }
+    .address-label{
+      font-size:11px;
+      color:var(--muted);
+      margin-bottom:4px;
+    }
+    .address-input{
+      width:100%;
+      padding:6px 9px;
+      border-radius:8px;
+      border:1px solid rgba(255,255,255,.08);
+      background:#050811;
+      color:var(--txt);
+      font-size:12px;
+      outline:none;
+    }
+
+    .balances{
+      display:flex;
+      gap:8px;
+      margin-bottom:14px;
+    }
+    .balance-card{
+      flex:1;
+      padding:8px 10px;
+      border-radius:12px;
+      background:radial-gradient(circle at top left,#1f2840,#090d16);
+      border:1px solid rgba(245,223,136,.18);
+    }
+    .balance-card h4{
+      margin:0 0 4px;
+      font-size:11px;
+      color:var(--muted);
+    }
+    .balance-value{
+      font-size:18px;
+      font-weight:700;
+      color:var(--gold1);
+    }
+    .balance-sub{
+      font-size:10px;
+      color:var(--muted);
+      margin-top:2px;
+    }
+
+    .btn{
+      border:none;
+      cursor:pointer;
+      border-radius:999px;
+      padding:7px 12px;
+      font-size:11px;
+      background:#141829;
+      color:var(--muted);
+      transition:.12s ease;
+    }
+    .btn-small{
+      padding:5px 9px;
+      font-size:10px;
+    }
+    .btn-primary{
+      background:linear-gradient(135deg,var(--gold1),var(--gold2));
+      color:#241303;
+      font-weight:600;
+      box-shadow:0 0 0 1px rgba(148,95,14,.7),
+        0 8px 18px rgba(0,0,0,.9);
+    }
+    .btn-primary:active{
+      transform:translateY(1px);
+      filter:brightness(.92);
+    }
+    .btn.disabled{
+      opacity:.4;
+      pointer-events:none;
+    }
+
+    .sound-btn{
+      float:right;
+      margin-bottom:6px;
+      background:#141829;
+      color:var(--gold1);
+      border:1px solid rgba(255,255,255,.1);
+    }
+
+    .actions-top{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      margin-bottom:10px;
+    }
+
+    .slot-wrapper{
+      background:radial-gradient(circle at top,#1d2338,#090d16 60%,#050811 100%);
+      border-radius:16px;
+      padding:12px 10px 14px;
+      border:1px solid rgba(255,255,255,.08);
+      margin-bottom:12px;
+      position:relative;
+      overflow:hidden;
+    }
+    .slot-top-label{
+      text-align:center;
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+    .slot-window{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:8px;
+      padding:10px 8px;
+      border-radius:12px;
+      background:linear-gradient(180deg,#05060b 0%,#0f1120 100%);
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);
+    }
+    .slot-cell{
+      background:radial-gradient(circle at top,#242b3f,#05060b 62%);
+      border-radius:10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:30px;
+      padding:10px 0;
+      box-shadow:inset 0 -2px 4px rgba(0,0,0,.8),
+        0 4px 10px rgba(0,0,0,.4);
+    }
+    .slot-cell img{
+      max-width:90%;
+      max-height:90%;
+      border-radius:6px;
+    }
+    .slot-shadow{
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      background:linear-gradient(to bottom,rgba(0,0,0,.65),transparent 25%,transparent 75%,rgba(0,0,0,.8));
+      mix-blend-mode:soft-light;
+    }
+
+    .controls{
+      display:flex;
+      gap:8px;
+      margin-bottom:8px;
+    }
+    .bet-block{
+      flex:1;
+      background:#090d16;
+      border-radius:12px;
+      padding:8px 9px;
+      border:1px solid rgba(255,255,255,.06);
+    }
+    .bet-label{
+      font-size:11px;
+      color:var(--muted);
+      margin-bottom:4px;
+    }
+    .bet-value{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    .bet-buttons{
+      display:flex;
+      gap:4px;
+    }
+    .bet-btn{
+      flex:1;
+      border:none;
+      border-radius:999px;
+      padding:4px 0;
+      font-size:11px;
+      background:#141829;
+      color:var(--muted);
+      cursor:pointer;
+    }
+    .bet-btn.active{
+      background:linear-gradient(135deg,var(--gold1),var(--gold2));
+      color:#241303;
+      font-weight:600;
+      box-shadow:0 0 12px rgba(245,223,136,.4);
+    }
+
+    .spin-btn{
+      flex-shrink:0;
+      width:150px;
+      padding:11px 8px;
+      border-radius:999px;
+      border:none;
+      cursor:pointer;
+      font-size:15px;
+      font-weight:700;
+      letter-spacing:.08em;
+      background:radial-gradient(circle at top,#ffe9aa,#f5c542);
+      color:#1a1205;
+      box-shadow:0 0 0 1px rgba(148,95,14,.7),
+        0 12px 28px rgba(0,0,0,.95);
+    }
+    .spin-btn.disabled{
+      opacity:0.35;
+      pointer-events:none;
+    }
+
+    .status{
+      font-size:13px;
+      min-height:18px;
+      text-align:center;
+      margin-bottom:8px;
+    }
+    .status.win{ color:var(--success); }
+    .status.lose{ color:var(--danger); }
+
+    .rules{
+      font-size:10px;
+      color:var(--muted);
+      line-height:1.5;
+      border-top:1px dashed rgba(255,255,255,.12);
+      padding-top:6px;
+    }
+
+    .blink{
+      animation: blinkAnim .5s ease-in-out infinite;
+    }
+    @keyframes blinkAnim{
+      0%{ opacity:1; }
+     50%{ opacity:0.25; }
+    100%{ opacity:1; }
+    }
+
+    @media (max-width:480px){
+      .app{ border-radius:12px; padding:14px 10px 18px; }
+      .spin-btn{ width:130px; font-size:14px; }
+    }
   </style>
 </head>
 <body>
 <div class="app">
-  <!-- Переключатель языков -->
   <div class="lang-switch">
     <button class="lang-btn" data-lang="en">EN</button>
     <button class="lang-btn" data-lang="ru">RU</button>
@@ -22,66 +335,60 @@
     <button class="lang-btn" data-lang="am">AM</button>
   </div>
 
-  <!-- Заголовок -->
   <div class="title" data-i18n="title">
     Ton21 Slot Machine
   </div>
   <div class="subtitle" data-i18n="subtitle">
-    Рекламная игра на фишках. 1 Ton21 = 100 фишек
+    Ad-based demo slot. 1 Ton21 = 100 chips
   </div>
 
-  <!-- TON адрес -->
   <div class="address-block">
     <div class="address-label" data-i18n="addr_label">
-      Ton адрес игрока (для реальных выплат Ton21):
+      Player TON address (for Ton21 payouts):
     </div>
     <input id="tonAddress"
            class="address-input"
-           placeholder="Например: EQB... или UQ..."
+           placeholder="e.g. EQB... or UQ..."
            data-i18n-placeholder="addr_placeholder"/>
   </div>
 
-  <!-- Балансы -->
   <div class="balances">
     <div class="balance-card">
-      <h4 data-i18n="chips_title">Баланс фишек</h4>
+      <h4 data-i18n="chips_title">Chip balance</h4>
       <div class="balance-value" id="chipBalance">0</div>
       <div class="balance-sub" data-i18n="chips_sub">
-        Фишки используются только внутри игры.
+        Chips are used only inside the game.
       </div>
     </div>
     <div class="balance-card">
-      <h4 data-i18n="t21_title">Учёт Ton21 (в игре)</h4>
+      <h4 data-i18n="t21_title">Ton21 tracking (in-game)</h4>
       <div class="balance-value" id="t21Balance">0</div>
       <div class="balance-sub" data-i18n="t21_sub">
-        Учёт предполагаемых Ton21 после покупок/вывода.
+        Internal record of Ton21 bought / withdrawn.
       </div>
     </div>
   </div>
 
-  <!-- Кнопка звука -->
-  <button id="soundToggle" class="btn btn-small sound-btn"
-          data-i18n-sound-on="sound_on"
-          data-i18n-sound-off="sound_off">
-    🔊 Звук: ON
+  <button id="soundToggle" class="btn btn-small sound-btn">
+    🔊 Sound: ON
   </button>
 
-  <!-- Верхние действия -->
+  <div style="clear:both;"></div>
+
   <div class="actions-top">
     <button class="btn btn-primary" id="watchAdBtn" data-i18n="btn_watch_ad">
-      Смотреть рекламу 30 секунд → +100 фишек
+      Watch ad 30 sec → +100 chips
     </button>
     <button class="btn btn-small" id="buyChipsBtn" data-i18n="btn_buy">
-      Купить фишки за Ton21 (через рекламу)
+      Buy chips for Ton21 (via ad)
     </button>
     <button class="btn btn-small" id="sellChipsBtn" data-i18n="btn_sell">
-      Продать фишки → Ton21 (через рекламу)
+      Sell chips → Ton21 (via ad)
     </button>
   </div>
 
-  <!-- Слот-окно -->
   <div class="slot-wrapper">
-    <div class="slot-top-label" data-i18n="result_label">РЕЗУЛЬТАТ</div>
+    <div class="slot-top-label" data-i18n="result_label">RESULT</div>
     <div class="slot-window">
       <div class="slot-cell" id="cell1"></div>
       <div class="slot-cell" id="cell2"></div>
@@ -98,10 +405,9 @@
     <div class="slot-shadow"></div>
   </div>
 
-  <!-- Управление ставкой -->
   <div class="controls">
     <div class="bet-block">
-      <div class="bet-label" data-i18n="bet_label">Ставка (фишки)</div>
+      <div class="bet-label" data-i18n="bet_label">Bet (chips)</div>
       <div class="bet-value">
         <span id="betDisplay">10</span>
         <div class="bet-buttons">
@@ -116,357 +422,569 @@
     </button>
   </div>
 
-  <!-- Статус -->
   <div id="status" class="status">…</div>
 
-  <!-- Правила -->
   <div class="rules">
-    <div data-i18n="rules_title"><b>Логика:</b></div>
+    <div data-i18n="rules_title"><b>Logic:</b></div>
     <div data-i18n="rules_1">
-      • Чтобы начать играть, посмотри рекламный ролик — получишь 100 фишек.
+      • To start playing, watch an ad and receive 100 chips.
     </div>
     <div data-i18n="rules_2">
-      • Игра ведётся на фишки. 1 Ton21 = 100 фишек (для покупок/выводов через рекламу).
+      • Game is played with chips. 1 Ton21 = 100 chips (for buy/sell via ads).
     </div>
     <div data-i18n="rules_3">
-      • Проверяется только центральная линия (3 символа по центру).
+      • Only the central horizontal line (3 symbols) is checked.
     </div>
     <div data-i18n="rules_4">
-      • Обычные символы: фрукты, звезда, алмаз.
+      • Regular symbols: fruits, star, diamond.
     </div>
     <div data-i18n="rules_5">
-      • Премиум-символ T21 с короной — самый редкий, 3 по центру дают выигрыш ×20 от ставки.
+      • Premium T21 symbol with crown is the rarest, 3 in center = ×20 bet.
     </div>
     <div data-i18n="rules_6">
-      • 3 одинаковых обычных символа → ставка × их множитель (до ×10).
+      • 3 same regular symbols → bet × multiplier (up to ×10).
     </div>
     <div data-i18n="rules_7">
-      • 2 одинаковых символа по центру → маленький выигрыш (ставка ×1.5).
+      • 2 same in the center line → small win (bet ×1.5).
     </div>
     <div data-i18n="rules_8">
-      • Покупка/продажа фишек за Ton21 также требуют просмотра рекламы.
+      • Buying/selling chips for Ton21 also requires watching an ad.
     </div>
   </div>
 </div>
 
-<!-- ЧАСТЬ 3–5: СЮДА ВСТАВИМ JS (логика слота, звук, реклама, переводы) -->
 <script>
-  // ==== PART 3–5 (JAVASCRIPT) WILL BE INSERTED HERE ===:root{
-  --bg:#050811;
-  --panel:#111724;
-  --gold1:#ffdf88;
-  --gold2:#f0cf6d;
-  --txt:#e8ecf7;
-  --muted:#9fb0c3;
-  --danger:#ff547a;
-  --success:#32d47b;
-}
+  // ---------- CONFIG ----------
+  const RATE = 100;        // 1 Ton21 = 100 chips
+  const MIN_WITHDRAW = 500; // пример минимального вывода (можно менять)
 
-*{ box-sizing:border-box }
-html,body{ height:100% }
+  // Если подключишь свой TonPlay — сюда вставь реальные ID
+  const TONPLAY_APP_ID = "YOUR_TONPLAY_APP_ID";
+  const TONPLAY_PLACEMENT_ID = "YOUR_PLACEMENT_ID";
 
-body{
-  margin:0;
-  font-family:system-ui,-apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif;
-  background:radial-gradient(1200px 700px at 50% -10%,#1b2232 0%,#050811 55%,#02040a 100%);
-  color:var(--txt);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:8px;
-}
+  // ---------- TRANSLATIONS (5 ЯЗЫКОВ) ----------
+  const translations = {
+    en: {
+      title: "Ton21 Slot Machine",
+      subtitle: "Ad-based demo slot. 1 Ton21 = 100 chips",
+      addr_label: "Player TON address (for Ton21 payouts):",
+      addr_placeholder: "e.g. EQB... or UQ...",
+      chips_title: "Chip balance",
+      chips_sub: "Chips are used only inside the game.",
+      t21_title: "Ton21 tracking (in-game)",
+      t21_sub: "Internal record of Ton21 bought / withdrawn.",
+      btn_watch_ad: "Watch ad 30 sec → +100 chips",
+      btn_buy: "Buy chips for Ton21 (via ad)",
+      btn_sell: "Sell chips → Ton21 (via ad)",
+      result_label: "RESULT",
+      bet_label: "Bet (chips)",
+      btn_spin: "SPIN",
+      rules_title: "Logic:",
+      rules_1: "• To start playing, watch an ad and receive 100 chips.",
+      rules_2: "• Game is played with chips. 1 Ton21 = 100 chips (for buy/sell via ads).",
+      rules_3: "• Only the central horizontal line (3 symbols) is checked.",
+      rules_4: "• Regular symbols: fruits, star, diamond.",
+      rules_5: "• Premium T21 symbol with crown is the rarest, 3 in center = ×20 bet.",
+      rules_6: "• 3 same regular symbols → bet × multiplier (up to ×10).",
+      rules_7: "• 2 same in the center line → small win (bet ×1.5).",
+      rules_8: "• Buying/selling chips for Ton21 also requires watching an ad.",
+      status_start: "Watch an ad → get chips → play!",
+      status_spin: "Spinning...",
+      status_nowin: "No win",
+      status_win: "Win: +{amount} chips",
+      status_not_enough: "Not enough chips for this bet.",
+      status_ad_fake: "Ad: {sec} sec…",
+      status_buy_cancel: "Purchase cancelled.",
+      status_sell_min: "Minimum withdraw: {min} Ton21.",
+      status_sell_not_enough: "Not enough chips. Need {need}, you have {have}.",
+      status_sell_done: "Sell {chips} chips. Pay out {t21} Ton21 to user.",
+      sound_on: "🔊 Sound: ON",
+      sound_off: "🔇 Sound: OFF",
+      prompt_buy: "How many Ton21 did user pay? (manual after on-chain tx)",
+      prompt_sell: "How many Ton21 to withdraw? (min {min})"
+    },
+    ru: {
+      title: "Ton21 Игровой Автомат",
+      subtitle: "Рекламный демо-слот. 1 Ton21 = 100 фишек",
+      addr_label: "Ton-адрес игрока (для выплат Ton21):",
+      addr_placeholder: "Например: EQB... или UQ...",
+      chips_title: "Баланс фишек",
+      chips_sub: "Фишки используются только внутри игры.",
+      t21_title: "Учёт Ton21 (внутри игры)",
+      t21_sub: "Внутренний учёт купленных / выведенных Ton21.",
+      btn_watch_ad: "Смотреть рекламу 30 сек → +100 фишек",
+      btn_buy: "Купить фишки за Ton21 (через рекламу)",
+      btn_sell: "Продать фишки → Ton21 (через рекламу)",
+      result_label: "РЕЗУЛЬТАТ",
+      bet_label: "Ставка (фишки)",
+      btn_spin: "SPIN",
+      rules_title: "Логика:",
+      rules_1: "• Чтобы начать играть, посмотри рекламу и получи 100 фишек.",
+      rules_2: "• Игра идёт на фишки. 1 Ton21 = 100 фишек (покупка/продажа через рекламу).",
+      rules_3: "• Проверяется только центральная горизонтальная линия (3 символа).",
+      rules_4: "• Обычные символы: фрукты, звезда, алмаз.",
+      rules_5: "• Премиум-символ T21 с короной — самый редкий, 3 по центру = ×20 от ставки.",
+      rules_6: "• 3 одинаковых обычных символа → ставка × множитель (до ×10).",
+      rules_7: "• 2 одинаковых по центру → маленький выигрыш (ставка ×1.5).",
+      rules_8: "• Покупка/продажа фишек за Ton21 тоже требует просмотра рекламы.",
+      status_start: "Смотри рекламу → получи фишки → играй!",
+      status_spin: "Кручение...",
+      status_nowin: "Нет выигрыша",
+      status_win: "Выигрыш: +{amount} фишек",
+      status_not_enough: "Недостаточно фишек для ставки.",
+      status_ad_fake: "Реклама: {sec} сек…",
+      status_buy_cancel: "Покупка отменена.",
+      status_sell_min: "Минимальный вывод: {min} Ton21.",
+      status_sell_not_enough: "Недостаточно фишек. Нужно {need}, у тебя {have}.",
+      status_sell_done: "Продано {chips} фишек. Выплати игроку {t21} Ton21.",
+      sound_on: "🔊 Звук: ВКЛ",
+      sound_off: "🔇 Звук: ВЫКЛ",
+      prompt_buy: "Сколько Ton21 оплатил пользователь? (после транзакции в сети)",
+      prompt_sell: "Сколько Ton21 вывести? (мин. {min})"
+    },
+    zh: {
+      title: "Ton21 老虎机",
+      subtitle: "广告奖励试玩机 · 1 Ton21 = 100 筹码",
+      addr_label: "玩家 TON 地址（用于 Ton21 发放）：",
+      addr_placeholder: "例如：EQB... 或 UQ...",
+      chips_title: "筹码余额",
+      chips_sub: "筹码仅用于游戏内部。",
+      t21_title: "Ton21 记录（游戏内）",
+      t21_sub: "记录已购买 / 提现的 Ton21。",
+      btn_watch_ad: "观看广告 30 秒 → +100 筹码",
+      btn_buy: "用 Ton21 购买筹码（需广告）",
+      btn_sell: "卖出筹码 → Ton21（需广告）",
+      result_label: "结果",
+      bet_label: "下注（筹码）",
+      btn_spin: "SPIN",
+      rules_title: "规则：",
+      rules_1: "• 开始游戏前，先看广告获取 100 筹码。",
+      rules_2: "• 游戏使用筹码，1 Ton21 = 100 筹码（通过广告买卖）。",
+      rules_3: "• 仅检查中间一横行的 3 个符号。",
+      rules_4: "• 普通符号：水果、星星、钻石。",
+      rules_5: "• 稀有 T21 皇冠符号，中间 3 个 = ×20 倍下注。",
+      rules_6: "• 3 个普通相同符号 → 下注 × 倍率（最高 ×10）。",
+      rules_7: "• 中线 2 个相同 → 小额奖励（下注 ×1.5）。",
+      rules_8: "• 用 Ton21 买卖筹码同样需要观看广告。",
+      status_start: "先看广告 → 获得筹码 → 然后开始游戏！",
+      status_spin: "旋转中...",
+      status_nowin: "未中奖",
+      status_win: "中奖：+{amount} 筹码",
+      status_not_enough: "筹码不足，无法下注。",
+      status_ad_fake: "广告：{sec} 秒…",
+      status_buy_cancel: "购买已取消。",
+      status_sell_min: "最少提现：{min} Ton21。",
+      status_sell_not_enough: "筹码不足，需要 {need}，当前 {have}。",
+      status_sell_done: "已卖出 {chips} 筹码，请向玩家转出 {t21} Ton21。",
+      sound_on: "🔊 声音：开",
+      sound_off: "🔇 声音：关",
+      prompt_buy: "用户实际支付了多少 Ton21？（链上转账后手动填写）",
+      prompt_sell: "提现多少 Ton21？（至少 {min}）"
+    },
+    hi: {
+      title: "Ton21 स्लॉट मशीन",
+      subtitle: "ऐड-बेस्ड डेमो स्लॉट · 1 Ton21 = 100 चिप्स",
+      addr_label: "प्लेयर का TON पता (Ton21 पेमेन्ट के लिए):",
+      addr_placeholder: "जैसे: EQB... या UQ...",
+      chips_title: "चिप बैलेंस",
+      chips_sub: "चिप्स केवल गेम के अंदर उपयोग होते हैं।",
+      t21_title: "Ton21 रिकॉर्ड (इन-गेम)",
+      t21_sub: "खरीदे / विथड्रा किए Ton21 का रिकॉर्ड।",
+      btn_watch_ad: "30 सेकंड ऐड देखें → +100 चिप्स",
+      btn_buy: "Ton21 से चिप्स खरीदें (ऐड के साथ)",
+      btn_sell: "चिप्स बेचें → Ton21 (ऐड के साथ)",
+      result_label: "रिज़ल्ट",
+      bet_label: "बेट (चिप्स)",
+      btn_spin: "SPIN",
+      rules_title: "लॉजिक:",
+      rules_1: "• शुरू करने के लिए ऐड देखो और 100 चिप्स पाओ।",
+      rules_2: "• गेम चिप्स से खेला जाता है. 1 Ton21 = 100 चिप्स (ऐड के जरिए buy/sell)।",
+      rules_3: "• सिर्फ बीच वाली हॉरिज़ॉन्टल लाइन (3 symbols) गिनी जाती है।",
+      rules_4: "• नॉर्मल symbols: फल, स्टार, डायमंड।",
+      rules_5: "• प्रीमियम T21 क्राउन symbol सबसे rare है, बीच के 3 = ×20 बेट।",
+      rules_6: "• 3 समान नॉर्मल symbols → बेट × मल्टीप्लायर (max ×10)।",
+      rules_7: "• बीच की लाइन में 2 समान → छोटा विन (बेट ×1.5)।",
+      rules_8: "• Ton21 से चिप buy/sell करने के लिए भी ऐड देखना ज़रूरी है।",
+      status_start: "ऐड देखो → चिप्स लो → खेलो!",
+      status_spin: "स्पिन हो रहा है...",
+      status_nowin: "इस बार विन नहीं आया",
+      status_win: "विन: +{amount} चिप्स",
+      status_not_enough: "इस बेट के लिए चिप्स कम हैं।",
+      status_ad_fake: "ऐड: {sec} सेकंड…",
+      status_buy_cancel: "खरीद रद्द की गई।",
+      status_sell_min: "मिनिमम विथड्रॉ: {min} Ton21.",
+      status_sell_not_enough: "चिप्स कम हैं, चाहिए {need}, अभी हैं {have}.",
+      status_sell_done: "{chips} चिप्स बेचे। प्लेयर को {t21} Ton21 भेजो।",
+      sound_on: "🔊 साउंड: ON",
+      sound_off: "🔇 साउंड: OFF",
+      prompt_buy: "यूज़र ने कितने Ton21 पे किए? (ऑन-चेन ट्रान्सफ़र के बाद)",
+      prompt_sell: "कितने Ton21 विथड्रा करने हैं? (कम से कम {min})"
+    },
+    am: {
+      title: "Ton21 Սլոտ Մեքենա",
+      subtitle: "Գովազդով աշխատող demo слот · 1 Ton21 = 100 չիպ",
+      addr_label: "Խաղացողի TON հասցեն (Ton21 վճարումների համար):",
+      addr_placeholder: "Օրինակ՝ EQB... կամ UQ...",
+      chips_title: "Չիպերի մնացորդ",
+      chips_sub: "Չիպերը օգտագործվում են միայն խաղի ներսում։",
+      t21_title: "Ton21 հաշվառում (խաղի ներսում)",
+      t21_sub: "Գնված / դուրս բերված Ton21-ի ներքին հաշվառում։",
+      btn_watch_ad: "Դիտել գովազդ 30 վրկ → +100 չիպ",
+      btn_buy: "Գնել չիպեր Ton21-ով (գովազդով)",
+      btn_sell: "Վաճառել չիպերը → Ton21 (գովազդով)",
+      result_label: "ԱՐԴՅՈՒՆՔ",
+      bet_label: "Գումարադրույք (չիպեր)",
+      btn_spin: "SPIN",
+      rules_title: "Տրամաբանություն․",
+      rules_1: "• Սկսելու համար դիտիր գովազդ և ստացիր 100 չիպ։",
+      rules_2: "• Խաղը գնում է չիպերով. 1 Ton21 = 100 չիպ (գովազդով գնման/վաճառքի համար)։",
+      rules_3: "• Ստուգվում է միայն կենտրոնական հորիզոնական գիծը (3 սիմվոլ)։",
+      rules_4: "• Սովորական սիմվոլներ․ մրգեր, աստղ, ադամանդ։",
+      rules_5: "• Պրեմիում T21 թագով սիմվոլը ամենահազվագյուտն է, կենտրոնում 3 հատ = ×20 խաղադրույք։",
+      rules_6: "• 3 նույն սովորական սիմվոլ → խաղադրույք × գործակից (մինչև ×10)։",
+      rules_7: "• Կենտրոնական գծում 2 նույնը → փոքր հաղթանակ (խաղադրույք ×1.5)։",
+      rules_8: "• Ton21-ով չիպ գնելու/վաճառելու համար նույնպես պետք է դիտել գովազդ։",
+      status_start: "Դիտիր գովազդ → ստացիր չիպեր → խաղա։",
+      status_spin: "Պտտվում է...",
+      status_nowin: "Հաղթանակ չկա",
+      status_win: "Հաղթանակ․ +{amount} չիպ",
+      status_not_enough: "Չի բավարարում չիպերի քանակը այս խաղադրույքի համար։",
+      status_ad_fake: "Գովազդ․ {sec} վրկ…",
+      status_buy_cancel: "Գնումը չեղարկվեց։",
+      status_sell_min: "Մինիմալ դուրսբերում․ {min} Ton21.",
+      status_sell_not_enough: "Չիպերը քիչ են․ պետք է {need}, իսկ քեզ մոտ կա {have}։",
+      status_sell_done: "Վաճառեցիր {chips} չիպ. Վճարիր խաղացողին {t21} Ton21։",
+      sound_on: "🔊 Ձայն․ ՄԻԱՑՎԱԾ",
+      sound_off: "🔇 Ձայն․ ԱՆՋԱՏՎԱԾ",
+      prompt_buy: "Քանի Ton21 է վճարել օգտատերը։ (ցանցում փոխանցումից հետո)",
+      prompt_sell: "Քանի Ton21 դուրս բերել։ (առնվազն {min})"
+    }
+  };
 
-/* Основной контейнер */
-.app{
-  width:100%;
-  max-width:480px;
-  background:linear-gradient(145deg,#0b101d 0%,#050811 40%,#0d1424 100%);
-  border-radius:18px;
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,.04),
-    0 24px 70px rgba(0,0,0,.95);
-  padding:18px 16px 20px;
-}
+  let currentLang = "en";
 
-/* Заголовок */
-.title{
-  text-align:center;
-  font-size:22px;
-  font-weight:700;
-  letter-spacing:.06em;
-  text-transform:uppercase;
-  margin-top:12px;
-}
-.subtitle{
-  text-align:center;
-  font-size:12px;
-  color:var(--muted);
-  margin-bottom:14px;
-}
+  // ---------- DOM ----------
+  const chipBalanceEl = document.getElementById("chipBalance");
+  const t21BalanceEl = document.getElementById("t21Balance");
+  const betDisplayEl = document.getElementById("betDisplay");
+  const statusEl = document.getElementById("status");
+  const spinBtn = document.getElementById("spinBtn");
+  const watchAdBtn = document.getElementById("watchAdBtn");
+  const buyChipsBtn = document.getElementById("buyChipsBtn");
+  const sellChipsBtn = document.getElementById("sellChipsBtn");
+  const tonAddressInp = document.getElementById("tonAddress");
+  const soundToggle = document.getElementById("soundToggle");
+  const langBtns = document.querySelectorAll(".lang-btn");
 
-/* Переключатель языков */
-.lang-switch{
-  display:flex;
-  justify-content:center;
-  gap:6px;
-  margin-bottom:10px;
-}
-.lang-btn{
-  border:none;
-  padding:6px 10px;
-  border-radius:8px;
-  font-size:11px;
-  background:#141829;
-  color:var(--muted);
-  cursor:pointer;
-  transition:0.12s;
-}
-.lang-btn.active{
-  background:linear-gradient(135deg,var(--gold1),var(--gold2));
-  color:#241303;
-  font-weight:600;
-  box-shadow:0 0 0 1px rgba(148,95,14,.7);
-}
+  const cellEls = [];
+  for (let i = 1; i <= 9; i++) {
+    cellEls.push(document.getElementById("cell" + i));
+  }
 
-/* Адрес */
-.address-block{
-  margin-bottom:12px;
-  padding:8px 10px;
-  border-radius:12px;
-  background:#090d16;
-  border:1px solid rgba(255,255,255,.06);
-}
-.address-label{
-  font-size:11px;
-  color:var(--muted);
-  margin-bottom:4px;
-}
-.address-input{
-  width:100%;
-  padding:6px 9px;
-  border-radius:8px;
-  border:1px solid rgba(255,255,255,.08);
-  background:#050811;
-  color:var(--txt);
-  font-size:12px;
-  outline:none;
-}
+  // ---------- STATE ----------
+  let chipBalance = 0;
+  let t21Balance  = 0;
+  let currentBet  = 10;
+  let spinning    = false;
+  let spinInterval = null;
 
-/* Балансы */
-.balances{
-  display:flex;
-  gap:8px;
-  margin-bottom:14px;
-}
-.balance-card{
-  flex:1;
-  padding:8px 10px;
-  border-radius:12px;
-  background:radial-gradient(circle at top left,#1f2840,#090d16);
-  border:1px solid rgba(245,223,136,.18);
-}
-.balance-card h4{
-  margin:0 0 4px;
-  font-size:11px;
-  color:var(--muted);
-}
-.balance-value{
-  font-size:18px;
-  font-weight:700;
-  color:var(--gold1);
-}
-.balance-sub{
-  font-size:10px;
-  color:var(--muted);
-  margin-top:2px;
-}
+  // звук
+  window.soundEnabled = true;
+  try {
+    const savedSound = localStorage.getItem("ton21_sound_enabled");
+    if (savedSound !== null) {
+      window.soundEnabled = savedSound === "true";
+    }
+  } catch(e){}
+  window.winSound = new Audio("win.mp3");
 
-/* Кнопки */
-.btn{
-  border:none;
-  cursor:pointer;
-  border-radius:999px;
-  padding:7px 12px;
-  font-size:11px;
-  background:#141829;
-  color:var(--muted);
-  transition:.12s ease;
-}
-.btn-small{
-  padding:5px 9px;
-  font-size:10px;
-}
-.btn-primary{
-  background:linear-gradient(135deg,var(--gold1),var(--gold2));
-  color:#241303;
-  font-weight:600;
-  box-shadow:0 0 0 1px rgba(148,95,14,.7),
-    0 8px 18px rgba(0,0,0,.9);
-}
-.btn-primary:active{
-  transform:translateY(1px);
-  filter:brightness(.92);
-}
+  // symbols
+  const symbols = [
+    { type: "emoji", value: "🍒", multi: 4, weight: 4 },
+    { type: "emoji", value: "🍋", multi: 3, weight: 4 },
+    { type: "emoji", value: "🍇", multi: 5, weight: 3 },
+    { type: "emoji", value: "⭐",  multi: 7, weight: 2 },
+    { type: "emoji", value: "💎", multi: 10, weight: 2 },
+    { type: "image", value: "t21.jpg", multi: 20, weight: 1 } // T21 ×20
+  ];
 
-/* Кнопка звука */
-.sound-btn{
-  float:right;
-  margin-bottom:6px;
-  background:#141829;
-  color:var(--gold1);
-  border:1px solid rgba(255,255,255,.1);
-}
+  // ---------- i18n Helpers ----------
+  function t(key, params={}) {
+    const dict = translations[currentLang] || translations.en;
+    let s = dict[key] || translations.en[key] || key;
+    Object.keys(params).forEach(p => {
+      s = s.replace(`{${p}}`, params[p]);
+    });
+    return s;
+  }
 
-/* Слот */
-.slot-wrapper{
-  background:radial-gradient(circle at top,#1d2338,#090d16 60%,#050811 100%);
-  border-radius:16px;
-  padding:12px 10px 14px;
-  border:1px solid rgba(255,255,255,.08);
-  margin-bottom:12px;
-  position:relative;
-  overflow:hidden;
-}
-.slot-top-label{
-  text-align:center;
-  font-size:11px;
-  text-transform:uppercase;
-  letter-spacing:.08em;
-  color:var(--muted);
-  margin-bottom:6px;
-}
-.slot-window{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:8px;
-  padding:10px 8px;
-  border-radius:12px;
-  background:linear-gradient(180deg,#05060b 0%,#0f1120 100%);
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);
-}
-.slot-cell{
-  background:radial-gradient(circle at top,#242b3f,#05060b 62%);
-  border-radius:10px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:30px;
-  padding:10px 0;
-  box-shadow:inset 0 -2px 4px rgba(0,0,0,.8),
-    0 4px 10px rgba(0,0,0,.4);
-}
-.slot-cell img{
-  max-width:90%;
-  max-height:90%;
-  border-radius:6px;
-}
-.slot-shadow{
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  background:linear-gradient(to bottom,rgba(0,0,0,.65),transparent 25%,transparent 75%,rgba(0,0,0,.8));
-  mix-blend-mode:soft-light;
-}
+  function applyTranslations() {
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+      const key = el.getAttribute("data-i18n");
+      el.textContent = t(key);
+    });
 
-/* Управление ставками */
-.controls{
-  display:flex;
-  gap:8px;
-  margin-bottom:8px;
-}
-.bet-block{
-  flex:1;
-  background:#090d16;
-  border-radius:12px;
-  padding:8px 9px;
-  border:1px solid rgba(255,255,255,.06);
-}
-.bet-label{
-  font-size:11px;
-  color:var(--muted);
-  margin-bottom:4px;
-}
-.bet-value{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-.bet-buttons{
-  display:flex;
-  gap:4px;
-}
-.bet-btn{
-  flex:1;
-  border:none;
-  border-radius:999px;
-  padding:4px 0;
-  font-size:11px;
-  background:#141829;
-  color:var(--muted);
-}
-.bet-btn.active{
-  background:linear-gradient(135deg,var(--gold1),var(--gold2));
-  color:#241303;
-  font-weight:600;
-  box-shadow:0 0 12px rgba(245,223,136,.4);
-}
+    const phKey = tonAddressInp.getAttribute("data-i18n-placeholder");
+    if (phKey) {
+      tonAddressInp.placeholder = t(phKey);
+    }
 
-/* SPIN кнопка */
-.spin-btn{
-  flex-shrink:0;
-  width:150px;
-  padding:11px 8px;
-  border-radius:999px;
-  border:none;
-  cursor:pointer;
-  font-size:15px;
-  font-weight:700;
-  letter-spacing:.08em;
-  background:radial-gradient(circle at top,#ffe9aa,#f5c542);
-  color:#1a1205;
-  box-shadow:0 0 0 1px rgba(148,95,14,.7),
-    0 12px 28px rgba(0,0,0,.95);
-}
-.spin-btn.disabled{
-  opacity:0.35;
-  pointer-events:none;
-}
+    updateSoundButton();
+  }
 
-/* Статус */
-.status{
-  font-size:13px;
-  min-height:18px;
-  text-align:center;
-  margin-bottom:8px;
-}
-.status.win{ color:var(--success); }
-.status.lose{ color:var(--danger); }
+  function updateSoundButton() {
+    soundToggle.textContent = window.soundEnabled ? t("sound_on") : t("sound_off");
+  }
 
-/* Правила */
-.rules{
-  font-size:10px;
-  color:var(--muted);
-  line-height:1.5;
-  border-top:1px dashed rgba(255,255,255,.12);
-  padding-top:6px;
-}
+  // ---------- Lang switch ----------
+  try {
+    const savedLang = localStorage.getItem("ton21_lang");
+    if (savedLang && translations[savedLang]) currentLang = savedLang;
+  } catch(e){}
 
-/* Мигание выигрышных символов */
-.blink{
-  animation: blinkAnim .5s ease-in-out infinite;
-}
-@keyframes blinkAnim{
-  0%{ opacity:1; }
- 50%{ opacity:0.25; }
-100%{ opacity:1; }
-}
+  langBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const lang = btn.dataset.lang;
+      if (!translations[lang]) return;
+      currentLang = lang;
+      try { localStorage.setItem("ton21_lang", lang); } catch(e){}
+      langBtns.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      applyTranslations();
+      setStatus(t("status_start"));
+    });
+  });
 
-@media (max-width:480px){
-  .app{ border-radius:12px; padding:14px 10px 18px; }
-  .spin-btn{ width:130px; font-size:14px; }
-}
+  langBtns.forEach(b => {
+    if (b.dataset.lang === currentLang) b.classList.add("active");
+  });
 
-  
+  // ---------- Address storage ----------
+  try {
+    const savedAddr = localStorage.getItem("ton21_address");
+    if (savedAddr) tonAddressInp.value = savedAddr;
+  } catch(e){}
+  tonAddressInp.addEventListener("input", () => {
+    try {
+      localStorage.setItem("ton21_address", tonAddressInp.value.trim());
+    } catch(e){}
+  });
+
+  // ---------- Balances ----------
+  function updateBalances() {
+    chipBalanceEl.textContent = chipBalance;
+    t21BalanceEl.textContent  = t21Balance;
+    spinBtn.classList.toggle("disabled", chipBalance < currentBet);
+  }
+
+  // ---------- Status ----------
+  function setStatus(text, type="") {
+    statusEl.textContent = text;
+    statusEl.className = "status";
+    if (type === "win") statusEl.classList.add("win");
+    if (type === "lose") statusEl.classList.add("lose");
+  }
+
+  // ---------- Symbols ----------
+  function randomSymbol() {
+    const totalWeight = symbols.reduce((s, sym) => s + sym.weight, 0);
+    let rnd = Math.random() * totalWeight;
+    for (const sym of symbols) {
+      if (rnd < sym.weight) return sym;
+      rnd -= sym.weight;
+    }
+    return symbols[0];
+  }
+
+  function renderSymbol(cell, symbol) {
+    if (symbol.type === "image") {
+      cell.innerHTML = `<img src="${symbol.value}" alt="T21">`;
+    } else {
+      cell.textContent = symbol.value;
+    }
+  }
+
+  // ---------- Spin Animation ----------
+  function startSpinAnimation() {
+    spinInterval = setInterval(() => {
+      cellEls.forEach(el => {
+        renderSymbol(el, randomSymbol());
+      });
+    }, 70);
+  }
+
+  function stopSpinAnimation() {
+    if (spinInterval) {
+      clearInterval(spinInterval);
+      spinInterval = null;
+    }
+  }
+
+  // ---------- Spin Logic ----------
+  function handleSpin() {
+    if (spinning) return;
+    if (chipBalance < currentBet) {
+      setStatus(t("status_not_enough"), "lose");
+      return;
+    }
+
+    spinning = true;
+    spinBtn.classList.add("disabled");
+    setStatus(t("status_spin"));
+
+    chipBalance -= currentBet;
+    updateBalances();
+    startSpinAnimation();
+
+    setTimeout(() => {
+      stopSpinAnimation();
+
+      const finalSymbols = cellEls.map(() => randomSymbol());
+      finalSymbols.forEach((s, i) => renderSymbol(cellEls[i], s));
+
+      const [a, b, c] = [finalSymbols[3], finalSymbols[4], finalSymbols[5]];
+      let winAmount = 0;
+
+      if (
+        a.type === "image" && b.type === "image" && c.type === "image" &&
+        a.value === "t21.jpg" && b.value === "t21.jpg" && c.value === "t21.jpg"
+      ) {
+        winAmount = currentBet * 20;
+      } else if (a.value === b.value && b.value === c.value) {
+        winAmount = currentBet * a.multi;
+      } else if (a.value === b.value || b.value === c.value || a.value === c.value) {
+        winAmount = Math.round(currentBet * 1.5);
+      }
+
+      if (winAmount > 0) {
+        [cellEls[3], cellEls[4], cellEls[5]].forEach(el => el.classList.add("blink"));
+        setTimeout(() => {
+          [cellEls[3], cellEls[4], cellEls[5]].forEach(el => el.classList.remove("blink"));
+        }, 2000);
+
+        if (window.soundEnabled && window.winSound) {
+          window.winSound.currentTime = 0;
+          window.winSound.play().catch(()=>{});
+        }
+
+        chipBalance += winAmount;
+        setStatus(t("status_win", {amount: winAmount}), "win");
+      } else {
+        setStatus(t("status_nowin"), "lose");
+      }
+
+      updateBalances();
+      spinning = false;
+    }, 900);
+  }
+
+  spinBtn.addEventListener("click", handleSpin);
+
+  // ---------- Bet buttons ----------
+  document.querySelectorAll(".bet-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const bet = Number(btn.dataset.bet);
+      currentBet = bet;
+      betDisplayEl.textContent = bet;
+      document.querySelectorAll(".bet-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      updateBalances();
+    });
+  });
+
+  // ---------- Sound toggle ----------
+  soundToggle.addEventListener("click", () => {
+    window.soundEnabled = !window.soundEnabled;
+    try { localStorage.setItem("ton21_sound_enabled", String(window.soundEnabled)); } catch(e){}
+    updateSoundButton();
+  });
+
+  // ---------- Ads ----------
+  function showRewardedAd(onReward) {
+    if (window.TonPlay && window.TonPlay.showRewardedAd && TONPLAY_APP_ID !== "YOUR_TONPLAY_APP_ID") {
+      window.TonPlay.showRewardedAd({
+        appId: TONPLAY_APP_ID,
+        placementId: TONPLAY_PLACEMENT_ID,
+        onReward: () => onReward(),
+        onError: () => fallbackAd(onReward)
+      });
+    } else {
+      fallbackAd(onReward);
+    }
+  }
+
+  function fallbackAd(onReward) {
+    let sec = 30;
+    const timer = setInterval(() => {
+      setStatus(t("status_ad_fake", {sec}), "");
+      sec--;
+      if (sec < 0) {
+        clearInterval(timer);
+        onReward();
+      }
+    }, 1000);
+  }
+
+  watchAdBtn.addEventListener("click", () => {
+    showRewardedAd(() => {
+      chipBalance += 100;
+      updateBalances();
+      setStatus(t("status_win", {amount: 100}), "win");
+    });
+  });
+
+  buyChipsBtn.addEventListener("click", () => {
+    showRewardedAd(() => {
+      const msg = t("prompt_buy");
+      const val = prompt(msg);
+      const amount = Number(val);
+      if (!amount || amount <= 0) {
+        setStatus(t("status_buy_cancel"), "lose");
+        return;
+      }
+      t21Balance += amount;
+      chipBalance += amount * RATE;
+      updateBalances();
+      setStatus(t("status_win", {amount: amount * RATE}), "win");
+    });
+  });
+
+  sellChipsBtn.addEventListener("click", () => {
+    showRewardedAd(() => {
+      const msg = t("prompt_sell", {min: MIN_WITHDRAW});
+      const val = prompt(msg);
+      const want = Number(val);
+      if (!want || want < MIN_WITHDRAW) {
+        setStatus(t("status_sell_min", {min: MIN_WITHDRAW}), "lose");
+        return;
+      }
+      const needChips = want * RATE;
+      if (needChips > chipBalance) {
+        setStatus(
+          t("status_sell_not_enough", {need: needChips, have: chipBalance}),
+          "lose"
+        );
+        return;
+      }
+      chipBalance -= needChips;
+      if (t21Balance - want < 0) {
+        t21Balance = 0;
+      } else {
+        t21Balance -= want;
+      }
+      updateBalances();
+      setStatus(
+        t("status_sell_done", {chips: needChips, t21: want}),
+        "win"
+      );
+    });
+  });
+
+  // ---------- Init ----------
+  cellEls.forEach(el => renderSymbol(el, randomSymbol()));
+  applyTranslations();
+  updateBalances();
+  setStatus(t("status_start"));
 </script>
 </body>
 </html>
