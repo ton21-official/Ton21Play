@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Simple Slot Machine</title>
+  <style>
+    :root {
+      --bg: #050811;
+      --panel: #111724;
+      --accent: #f5c542;
+      --accent2: #ff8c42;
+      --text: #e8ecf7;
+      --muted: #9aa3bb;
+      --danger: #ff4b6e;
+      --success: #45d27f;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+      background: radial-gradient(circle at top, #1b2440, #050811 55%, #02040a 100%);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 420px;
+      padding: 20px 18px 24px;
+      background: linear-gradient(145deg, #0b101d 0%, #050811 40%, #0d1424 100%);
+      border-radius: 18px;
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.04),
+        0 20px 60px rgba(0, 0, 0, 0.85);
+    }
+
+    .title {
+      text-align: center;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    .balance-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      background: radial-gradient(circle at top left, #1f2840, #0a0f1b);
+      border-radius: 12px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(245, 197, 66, 0.18);
+    }
+
+    .balance-row span {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .balance-row strong {
+      font-size: 16px;
+      color: var(--accent);
+    }
+
+    .slot-wrapper {
+      background: radial-gradient(circle at top, #1d2338, #090d16 60%, #050811 100%);
+      border-radius: 16px;
+      padding: 14px 10px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      margin-bottom: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slot-window {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 10px 8px 6px;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #05060b 0%, #0f1120 100%);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+      margin-bottom: 8px;
+      min-height: 82px;
+    }
+
+    .slot-cell {
+      background: radial-gradient(circle at top, #1f2538, #05060b 62%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      padding: 8px 0;
+      box-shadow:
+        inset 0 -2px 4px rgba(0,0,0,0.8),
+        0 4px 10px rgba(0,0,0,0.4);
+    }
+
+    .slot-top-label {
+      text-align: center;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .slot-shadow {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(to bottom, rgba(0,0,0,0.6), transparent 25%, transparent 75%, rgba(0,0,0,0.7));
+      mix-blend-mode: soft-light;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .bet-block {
+      flex: 1;
+      background: #090d16;
+      border-radius: 12px;
+      padding: 8px 10px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .bet-label {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .bet-value {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .bet-value span {
+      font-size: 14px;
+    }
+
+    .bet-buttons {
+      display: flex;
+      gap: 4px;
+    }
+
+    .bet-btn {
+      flex: 1;
+      font-size: 11px;
+      padding: 4px 0;
+      border-radius: 999px;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      background: #141829;
+      color: var(--muted);
+      transition: 0.12s ease;
+    }
+
+    .bet-btn.active {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #050811;
+      font-weight: 600;
+      box-shadow: 0 0 12px rgba(245,197,66,0.4);
+    }
+
+    .spin-btn {
+      flex-shrink: 0;
+      width: 130px;
+      padding: 11px 8px;
+      border-radius: 999px;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: radial-gradient(circle at top, #ffe6a0, #f5c542);
+      color: #1a1205;
+      box-shadow:
+        0 0 0 1px rgba(148, 95, 14, 0.7),
+        0 10px 26px rgba(0,0,0,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.08s ease;
+    }
+
+    .spin-btn:active {
+      transform: translateY(1px);
+      box-shadow:
+        0 0 0 1px rgba(148, 95, 14, 0.7),
+        0 4px 14px rgba(0,0,0,0.9);
+      filter: brightness(0.96);
+    }
+
+    .spin-btn.disabled {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    .status {
+      font-size: 13px;
+      min-height: 18px;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .status.win {
+      color: var(--success);
+    }
+
+    .status.lose {
+      color: var(--danger);
+    }
+
+    .rules {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.5;
+      border-top: 1px dashed rgba(255,255,255,0.12);
+      padding-top: 8px;
+      margin-top: 6px;
+    }
+
+    .rules b {
+      color: var(--accent);
+    }
+
+    .small-btn-row {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .small-btn {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: #090d16;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    @media (max-width: 420px) {
+      .app {
+        border-radius: 0;
+        max-width: 100%;
+        height: 100vh;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="title">Slot Machine</div>
+  <div class="subtitle">Простой демо-автомат на фишки (без реальных денег)</div>
+
+  <div class="balance-row">
+    <span>Баланс:</span>
+    <strong id="balance">100</strong>
+  </div>
+
+  <div class="slot-wrapper">
+    <div class="slot-top-label">РЕЗУЛЬТАТ</div>
+    <div class="slot-window">
+      <div class="slot-cell" id="cell1">🍋</div>
+      <div class="slot-cell" id="cell2">🍒</div>
+      <div class="slot-cell" id="cell3">💎</div>
+    </div>
+    <div class="slot-shadow"></div>
+  </div>
+
+  <div class="controls">
+    <div class="bet-block">
+      <div class="bet-label">Ставка (фишки)</div>
+      <div class="bet-value">
+        <span id="betDisplay">10</span>
+        <div class="bet-buttons">
+          <button class="bet-btn active" data-bet="10">10</button>
+          <button class="bet-btn" data-bet="20">20</button>
+          <button class="bet-btn" data-bet="50">50</button>
+        </div>
+      </div>
+    </div>
+    <button class="spin-btn" id="spinBtn">
+      SPIN
+    </button>
+  </div>
+
+  <div id="status" class="status"></div>
+
+  <div class="rules">
+    <b>Правила выигрыша:</b><br/>
+    • 3 одинаковых символа → выигрыш = ставка × множитель (до ×10).<br/>
+    • 2 одинаковых символа → маленький выигрыш (ставка ×1.5).<br/>
+    • Иначе — ставка проигрывается.<br/>
+    <br/>
+    <b>Совет:</b> Баланс — просто демо. Можно обнулить и начать заново.
+  </div>
+
+  <div class="small-btn-row">
+    <button class="small-btn" id="resetBtn">Сбросить баланс</button>
+  </div>
+</div>
+
+<script>
+  // Символы и их множители для 3 одинаковых
+  const symbols = [
+    { emoji: "🍒", multi: 4 },
+    { emoji: "🍋", multi: 3 },
+    { emoji: "🍇", multi: 5 },
+    { emoji: "⭐", multi: 7 },
+    { emoji: "💎", multi: 10 }
+  ];
+
+  let balance = 100;
+  let currentBet = 10;
+  let spinning = false;
+  let spinInterval = null;
+
+  const balanceEl = document.getElementById("balance");
+  const betDisplayEl = document.getElementById("betDisplay");
+  const statusEl = document.getElementById("status");
+  const spinBtn = document.getElementById("spinBtn");
+  const resetBtn = document.getElementById("resetBtn");
+
+  const cellEls = [
+    document.getElementById("cell1"),
+    document.getElementById("cell2"),
+    document.getElementById("cell3")
+  ];
+
+  function updateBalanceDisplay() {
+    balanceEl.textContent = balance.toString();
+  }
+
+  function setStatus(text, type = "") {
+    statusEl.textContent = text;
+    statusEl.className = "status";
+    if (type === "win") statusEl.classList.add("win");
+    if (type === "lose") statusEl.classList.add("lose");
+  }
+
+  function randomSymbol() {
+    const idx = Math.floor(Math.random() * symbols.length);
+    return symbols[idx];
+  }
+
+  // Анимация кручения
+  function startSpinAnimation() {
+    spinInterval = setInterval(() => {
+      cellEls.forEach((el) => {
+        const s = randomSymbol();
+        el.textContent = s.emoji;
+      });
+    }, 80);
+  }
+
+  function stopSpinAnimation() {
+    if (spinInterval) {
+      clearInterval(spinInterval);
+      spinInterval = null;
+    }
+  }
+
+  function handleSpin() {
+    if (spinning) return;
+    if (currentBet > balance) {
+      setStatus("Недостаточно фишек для ставки.", "lose");
+      return;
+    }
+
+    spinning = true;
+    spinBtn.classList.add("disabled");
+    setStatus("Кручение…");
+
+    // Списываем ставку сразу
+    balance -= currentBet;
+    updateBalanceDisplay();
+
+    startSpinAnimation();
+
+    // Финальный результат через 900 мс (можно менять)
+    setTimeout(() => {
+      stopSpinAnimation();
+
+      const finalSymbols = cellEls.map(() => randomSymbol());
+      finalSymbols.forEach((s, i) => {
+        cellEls[i].textContent = s.emoji;
+      });
+
+      const [a, b, c] = finalSymbols;
+
+      let winAmount = 0;
+
+      // 3 одинаковых
+      if (a.emoji === b.emoji && b.emoji === c.emoji) {
+        winAmount = Math.round(currentBet * a.multi);
+      }
+      // 2 одинаковых
+      else if (a.emoji === b.emoji || a.emoji === c.emoji || b.emoji === c.emoji) {
+        winAmount = Math.round(currentBet * 1.5);
+      }
+
+      if (winAmount > 0) {
+        balance += winAmount;
+        updateBalanceDisplay();
+        setStatus(`Выигрыш: +${winAmount} фишек!`, "win");
+      } else {
+        setStatus("Увы, в этот раз без выигрыша.", "lose");
+      }
+
+      spinning = false;
+      spinBtn.classList.remove("disabled");
+    }, 900);
+  }
+
+  // Обработчики ставок
+  document.querySelectorAll(".bet-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const bet = Number(btn.getAttribute("data-bet"));
+      currentBet = bet;
+      betDisplayEl.textContent = bet.toString();
+      document.querySelectorAll(".bet-btn").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+    });
+  });
+
+  spinBtn.addEventListener("click", handleSpin);
+
+  resetBtn.addEventListener("click", () => {
+    balance = 100;
+    updateBalanceDisplay();
+    setStatus("Баланс сброшен до 100 фишек.");
+  });
+
+  // Инициализация
+  updateBalanceDisplay();
+  setStatus("Сделайте ставку и нажмите SPIN.");
+</script>
+</body>
+</html>
