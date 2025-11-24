@@ -2,337 +2,409 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Simple Slot Machine</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+  <title>Ton21 Slot Machine</title>
+  <meta name="color-scheme" content="dark light">
   <style>
-    :root {
-      --bg: #050811;
-      --panel: #111724;
-      --accent: #f5c542;
-      --accent2: #ff8c42;
-      --text: #e8ecf7;
-      --muted: #9aa3bb;
-      --danger: #ff4b6e;
-      --success: #45d27f;
+    :root{
+      --bg:#050811;
+      --panel:#111724;
+      --gold1:#ffdf88;
+      --gold2:#f0cf6d;
+      --txt:#e8ecf7;
+      --muted:#9fb0c3;
+      --danger:#ff547a;
+      --success:#32d47b;
     }
-
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-      background: radial-gradient(circle at top, #1b2440, #050811 55%, #02040a 100%);
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif;
+      background:radial-gradient(1200px 700px at 50% -10%,#1b2232 0%,#050811 55%,#02040a 100%);
+      color:var(--txt);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:8px;
     }
-
-    .app {
-      width: 100%;
-      max-width: 420px;
-      padding: 20px 18px 24px;
-      background: linear-gradient(145deg, #0b101d 0%, #050811 40%, #0d1424 100%);
-      border-radius: 18px;
+    .app{
+      width:100%;
+      max-width:460px;
+      background:linear-gradient(145deg,#0b101d 0%,#050811 40%,#0d1424 100%);
+      border-radius:18px;
       box-shadow:
-        0 0 0 1px rgba(255, 255, 255, 0.04),
-        0 20px 60px rgba(0, 0, 0, 0.85);
+        0 0 0 1px rgba(255,255,255,.04),
+        0 24px 70px rgba(0,0,0,.95);
+      padding:18px 16px 20px;
+    }
+    .title{
+      text-align:center;
+      font-size:22px;
+      font-weight:700;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      margin-bottom:4px;
+    }
+    .subtitle{
+      text-align:center;
+      font-size:11px;
+      color:var(--muted);
+      margin-bottom:12px;
     }
 
-    .title {
-      text-align: center;
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: 0.03em;
-      margin-bottom: 4px;
+    .address-block{
+      margin-bottom:10px;
+      padding:8px 10px;
+      border-radius:12px;
+      background:#090d16;
+      border:1px solid rgba(255,255,255,.06);
+    }
+    .address-label{
+      font-size:11px;
+      color:var(--muted);
+      margin-bottom:4px;
+    }
+    .address-input{
+      width:100%;
+      padding:6px 9px;
+      border-radius:8px;
+      border:1px solid rgba(255,255,255,.08);
+      background:#050811;
+      color:var(--txt);
+      font-size:12px;
+      outline:none;
     }
 
-    .subtitle {
-      text-align: center;
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 16px;
+    .balances{
+      display:flex;
+      gap:8px;
+      margin-bottom:10px;
+    }
+    .balance-card{
+      flex:1;
+      padding:8px 10px;
+      border-radius:12px;
+      background:radial-gradient(circle at top left,#1f2840,#090d16);
+      border:1px solid rgba(245,223,136,.18);
+    }
+    .balance-card h4{
+      margin:0 0 4px;
+      font-size:11px;
+      color:var(--muted);
+    }
+    .balance-value{
+      font-size:16px;
+      font-weight:700;
+      color:var(--gold1);
+      word-break:break-all;
+    }
+    .balance-sub{
+      font-size:10px;
+      color:var(--muted);
+      margin-top:2px;
     }
 
-    .balance-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 12px;
-      background: radial-gradient(circle at top left, #1f2840, #0a0f1b);
-      border-radius: 12px;
-      margin-bottom: 12px;
-      border: 1px solid rgba(245, 197, 66, 0.18);
+    .convert-block{
+      margin-bottom:12px;
+      padding:8px 10px;
+      border-radius:12px;
+      background:#090d16;
+      border:1px solid rgba(255,255,255,.06);
+      font-size:11px;
+    }
+    .convert-row{
+      display:flex;
+      gap:6px;
+      margin-top:6px;
+    }
+    .convert-row input{
+      flex:1;
+      padding:5px 8px;
+      border-radius:8px;
+      border:1px solid rgba(255,255,255,.08);
+      background:#050811;
+      color:var(--txt);
+      font-size:11px;
+      outline:none;
+    }
+    .btn{
+      border:none;
+      outline:none;
+      cursor:pointer;
+      border-radius:999px;
+      padding:6px 9px;
+      font-size:11px;
+      background:#141829;
+      color:var(--muted);
+      white-space:nowrap;
+      transition:.12s ease;
+    }
+    .btn-primary{
+      background:linear-gradient(135deg,var(--gold1),var(--gold2));
+      color:#241303;
+      font-weight:600;
+      box-shadow:0 0 0 1px rgba(148,95,14,.7),0 8px 18px rgba(0,0,0,.9);
+    }
+    .btn-primary:active{
+      transform:translateY(1px);
+      box-shadow:0 0 0 1px rgba(148,95,14,.7),0 4px 12px rgba(0,0,0,.9);
+      filter:brightness(.96);
     }
 
-    .balance-row span {
-      font-size: 13px;
-      color: var(--muted);
+    .slot-wrapper{
+      background:radial-gradient(circle at top,#1d2338,#090d16 60%,#050811 100%);
+      border-radius:16px;
+      padding:12px 10px 14px;
+      border:1px solid rgba(255,255,255,.08);
+      margin-bottom:12px;
+      position:relative;
+      overflow:hidden;
     }
-
-    .balance-row strong {
-      font-size: 16px;
-      color: var(--accent);
+    .slot-top-label{
+      text-align:center;
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:var(--muted);
+      margin-bottom:4px;
     }
-
-    .slot-wrapper {
-      background: radial-gradient(circle at top, #1d2338, #090d16 60%, #050811 100%);
-      border-radius: 16px;
-      padding: 14px 10px 16px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      margin-bottom: 14px;
-      position: relative;
-      overflow: hidden;
+    .slot-window{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:8px;
+      padding:10px 8px 10px;
+      border-radius:12px;
+      background:linear-gradient(180deg,#05060b 0%,#0f1120 100%);
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);
+      min-height:210px;
     }
-
-    .slot-window {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      padding: 10px 8px 6px;
-      border-radius: 12px;
-      background: linear-gradient(180deg, #05060b 0%, #0f1120 100%);
-      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
-      margin-bottom: 8px;
-      min-height: 82px;
-    }
-
-    .slot-cell {
-      background: radial-gradient(circle at top, #1f2538, #05060b 62%);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 32px;
-      padding: 8px 0;
+    .slot-cell{
+      background:radial-gradient(circle at top,#242b3f,#05060b 62%);
+      border-radius:10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:32px;
+      padding:8px 0;
       box-shadow:
-        inset 0 -2px 4px rgba(0,0,0,0.8),
-        0 4px 10px rgba(0,0,0,0.4);
+        inset 0 -2px 4px rgba(0,0,0,.8),
+        0 4px 10px rgba(0,0,0,.4);
+    }
+    .slot-shadow{
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      background:linear-gradient(to bottom,rgba(0,0,0,.65),transparent 25%,transparent 75%,rgba(0,0,0,.8));
+      mix-blend-mode:soft-light;
     }
 
-    .slot-top-label {
-      text-align: center;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--muted);
-      margin-bottom: 4px;
+    .controls{
+      display:flex;
+      gap:8px;
+      margin-bottom:8px;
+    }
+    .bet-block{
+      flex:1;
+      background:#090d16;
+      border-radius:12px;
+      padding:8px 9px;
+      border:1px solid rgba(255,255,255,.06);
+    }
+    .bet-label{
+      font-size:11px;
+      color:var(--muted);
+      margin-bottom:4px;
+    }
+    .bet-value{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+    }
+    .bet-value span{
+      font-size:14px;
+    }
+    .bet-buttons{
+      display:flex;
+      gap:4px;
+    }
+    .bet-btn{
+      flex:1;
+      font-size:11px;
+      padding:4px 0;
+      border-radius:999px;
+      border:none;
+      outline:none;
+      cursor:pointer;
+      background:#141829;
+      color:var(--muted);
+      transition:.12s ease;
+    }
+    .bet-btn.active{
+      background:linear-gradient(135deg,var(--gold1),var(--gold2));
+      color:#241303;
+      font-weight:600;
+      box-shadow:0 0 12px rgba(245,223,136,.4);
     }
 
-    .slot-shadow {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      background:
-        linear-gradient(to bottom, rgba(0,0,0,0.6), transparent 25%, transparent 75%, rgba(0,0,0,0.7));
-      mix-blend-mode: soft-light;
-    }
-
-    .controls {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-
-    .bet-block {
-      flex: 1;
-      background: #090d16;
-      border-radius: 12px;
-      padding: 8px 10px;
-      border: 1px solid rgba(255,255,255,0.06);
-    }
-
-    .bet-label {
-      font-size: 11px;
-      color: var(--muted);
-      margin-bottom: 4px;
-    }
-
-    .bet-value {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .bet-value span {
-      font-size: 14px;
-    }
-
-    .bet-buttons {
-      display: flex;
-      gap: 4px;
-    }
-
-    .bet-btn {
-      flex: 1;
-      font-size: 11px;
-      padding: 4px 0;
-      border-radius: 999px;
-      border: none;
-      outline: none;
-      cursor: pointer;
-      background: #141829;
-      color: var(--muted);
-      transition: 0.12s ease;
-    }
-
-    .bet-btn.active {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      color: #050811;
-      font-weight: 600;
-      box-shadow: 0 0 12px rgba(245,197,66,0.4);
-    }
-
-    .spin-btn {
-      flex-shrink: 0;
-      width: 130px;
-      padding: 11px 8px;
-      border-radius: 999px;
-      border: none;
-      outline: none;
-      cursor: pointer;
-      font-size: 15px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      background: radial-gradient(circle at top, #ffe6a0, #f5c542);
-      color: #1a1205;
+    .spin-btn{
+      flex-shrink:0;
+      width:140px;
+      padding:11px 8px;
+      border-radius:999px;
+      border:none;
+      outline:none;
+      cursor:pointer;
+      font-size:15px;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.09em;
+      background:radial-gradient(circle at top,#ffe9aa,#f5c542);
+      color:#1a1205;
       box-shadow:
-        0 0 0 1px rgba(148, 95, 14, 0.7),
-        0 10px 26px rgba(0,0,0,0.9);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.08s ease;
+        0 0 0 1px rgba(148,95,14,.7),
+        0 12px 28px rgba(0,0,0,.95);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      transition:transform .08s ease,box-shadow .08s ease,filter .08s ease;
     }
-
-    .spin-btn:active {
-      transform: translateY(1px);
+    .spin-btn:active{
+      transform:translateY(1px);
       box-shadow:
-        0 0 0 1px rgba(148, 95, 14, 0.7),
-        0 4px 14px rgba(0,0,0,0.9);
-      filter: brightness(0.96);
+        0 0 0 1px rgba(148,95,14,.7),
+        0 6px 16px rgba(0,0,0,.95);
+      filter:brightness(.96);
+    }
+    .spin-btn.disabled{
+      opacity:.4;
+      pointer-events:none;
     }
 
-    .spin-btn.disabled {
-      opacity: 0.4;
-      pointer-events: none;
+    .status{
+      font-size:13px;
+      min-height:18px;
+      margin-bottom:6px;
+      text-align:center;
+    }
+    .status.win{color:var(--success);}
+    .status.lose{color:var(--danger);}
+
+    .rules{
+      font-size:10px;
+      color:var(--muted);
+      line-height:1.5;
+      border-top:1px dashed rgba(255,255,255,.12);
+      padding-top:6px;
+      margin-top:4px;
     }
 
-    .status {
-      font-size: 13px;
-      min-height: 18px;
-      margin-bottom: 8px;
-      text-align: center;
-    }
-
-    .status.win {
-      color: var(--success);
-    }
-
-    .status.lose {
-      color: var(--danger);
-    }
-
-    .rules {
-      font-size: 11px;
-      color: var(--muted);
-      line-height: 1.5;
-      border-top: 1px dashed rgba(255,255,255,0.12);
-      padding-top: 8px;
-      margin-top: 6px;
-    }
-
-    .rules b {
-      color: var(--accent);
-    }
-
-    .small-btn-row {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 6px;
-    }
-
-    .small-btn {
-      font-size: 11px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.1);
-      background: #090d16;
-      color: var(--muted);
-      cursor: pointer;
-    }
-
-    @media (max-width: 420px) {
-      .app {
-        border-radius: 0;
-        max-width: 100%;
-        height: 100vh;
-      }
+    @media (max-width:480px){
+      .app{border-radius:12px;padding:14px 10px 18px;}
+      .spin-btn{width:120px;font-size:14px;}
     }
   </style>
 </head>
 <body>
 <div class="app">
-  <div class="title">Slot Machine</div>
-  <div class="subtitle">Простой демо-автомат на фишки (без реальных денег)</div>
+  <div class="title">Ton21 Slot Machine</div>
+  <div class="subtitle">Игра на фишках. 1 Ton21 = 100 фишек</div>
 
-  <div class="balance-row">
-    <span>Баланс:</span>
-    <strong id="balance">100</strong>
+  <!-- TON адрес игрока -->
+  <div class="address-block">
+    <div class="address-label">Ton адрес игрока (для вывода Ton21):</div>
+    <input id="tonAddress" class="address-input" placeholder="Например: EQB... или UQ..." />
   </div>
 
+  <!-- Балансы -->
+  <div class="balances">
+    <div class="balance-card">
+      <h4>Баланс фишек</h4>
+      <div class="balance-value" id="chipBalance">0</div>
+      <div class="balance-sub">Фишки используются для игры в слот</div>
+    </div>
+    <div class="balance-card">
+      <h4>Баланс Ton21 (внутри игры)</h4>
+      <div class="balance-value" id="t21Balance">0</div>
+      <div class="balance-sub">1 Ton21 = 100 фишек. Вывод от 500 Ton21</div>
+    </div>
+  </div>
+
+  <!-- Покупка/продажа фишек -->
+  <div class="convert-block">
+    <div><b>Обмен Ton21 ↔ Фишки</b></div>
+    <div>Курс: <b>1 Ton21 = 100 фишек</b>. Минимум для вывода: <b>500 Ton21</b>.</div>
+
+    <!-- Купить фишки -->
+    <div class="convert-row">
+      <input type="number" id="buyInput" placeholder="Сколько Ton21 потратить на фишки?">
+      <button class="btn btn-primary" id="buyBtn">Купить фишки</button>
+    </div>
+
+    <!-- Продать фишки -->
+    <div class="convert-row">
+      <input type="number" id="sellInput" placeholder="Сколько Ton21 получить за фишки (мин. 500)?">
+      <button class="btn" id="sellBtn">Продать фишки → Ton21</button>
+    </div>
+  </div>
+
+  <!-- Слот -->
   <div class="slot-wrapper">
     <div class="slot-top-label">РЕЗУЛЬТАТ</div>
     <div class="slot-window">
-      <div class="slot-cell" id="cell1">🍋</div>
-      <div class="slot-cell" id="cell2">🍒</div>
+      <div class="slot-cell" id="cell1">🍒</div>
+      <div class="slot-cell" id="cell2">🍋</div>
       <div class="slot-cell" id="cell3">💎</div>
+
+      <div class="slot-cell" id="cell4">💎</div>
+      <div class="slot-cell" id="cell5">🍒</div>
+      <div class="slot-cell" id="cell6">⭐</div>
+
+      <div class="slot-cell" id="cell7">🍇</div>
+      <div class="slot-cell" id="cell8">⭐</div>
+      <div class="slot-cell" id="cell9">🍒</div>
     </div>
     <div class="slot-shadow"></div>
   </div>
 
+  <!-- Управление ставкой -->
   <div class="controls">
     <div class="bet-block">
       <div class="bet-label">Ставка (фишки)</div>
       <div class="bet-value">
-        <span id="betDisplay">10</span>
+        <span id="betDisplay">100</span>
         <div class="bet-buttons">
-          <button class="bet-btn active" data-bet="10">10</button>
-          <button class="bet-btn" data-bet="20">20</button>
-          <button class="bet-btn" data-bet="50">50</button>
+          <button class="bet-btn active" data-bet="100">100</button>
+          <button class="bet-btn" data-bet="500">500</button>
+          <button class="bet-btn" data-bet="1000">1000</button>
         </div>
       </div>
     </div>
-    <button class="spin-btn" id="spinBtn">
-      SPIN
-    </button>
+    <button class="spin-btn" id="spinBtn">SPIN</button>
   </div>
 
   <div id="status" class="status"></div>
 
   <div class="rules">
-    <b>Правила выигрыша:</b><br/>
+    <b>Логика игры:</b><br/>
+    • Игра ведётся на фишки. Фишки покупаются за Ton21 по курсу 1 Ton21 = 100 фишек.<br/>
+    • Проверяется только центральная линия (3 символа по середине).<br/>
     • 3 одинаковых символа → выигрыш = ставка × множитель (до ×10).<br/>
-    • 2 одинаковых символа → маленький выигрыш (ставка ×1.5).<br/>
-    • Иначе — ставка проигрывается.<br/>
-    <br/>
-    <b>Совет:</b> Баланс — просто демо. Можно обнулить и начать заново.
-  </div>
-
-  <div class="small-btn-row">
-    <button class="small-btn" id="resetBtn">Сбросить баланс</button>
+    • 2 одинаковых символа по центру → маленький выигрыш (ставка ×1.5).<br/>
+    • Иначе ставка проигрывается.<br/><br/>
+    Балансы и адрес хранятся только в вашем браузере (демо-логика без блокчейна).
   </div>
 </div>
 
 <script>
-  // Символы и их множители для 3 одинаковых
+  // ─────────────────────────────────────────────
+  // Константы
+  // ─────────────────────────────────────────────
+  const RATE = 100;              // 1 Ton21 = 100 фишек
+  const MIN_WITHDRAW_T21 = 500;  // минимальный вывод Ton21
+
+  // Символы (позже можно заменить на PNG-иконки)
   const symbols = [
     { emoji: "🍒", multi: 4 },
     { emoji: "🍋", multi: 3 },
@@ -341,25 +413,54 @@
     { emoji: "💎", multi: 10 }
   ];
 
-  let balance = 100;
-  let currentBet = 10;
+  // ─────────────────────────────────────────────
+  // Состояние (демо)
+  // ─────────────────────────────────────────────
+  let chipBalance = 10000; // "Фишек сделай много"
+  let t21Balance = 0;
+  let currentBet = 100;
   let spinning = false;
   let spinInterval = null;
 
-  const balanceEl = document.getElementById("balance");
-  const betDisplayEl = document.getElementById("betDisplay");
-  const statusEl = document.getElementById("status");
-  const spinBtn = document.getElementById("spinBtn");
-  const resetBtn = document.getElementById("resetBtn");
+  // ─────────────────────────────────────────────
+  // DOM элементы
+  // ─────────────────────────────────────────────
+  const chipBalanceEl = document.getElementById("chipBalance");
+  const t21BalanceEl  = document.getElementById("t21Balance");
+  const betDisplayEl  = document.getElementById("betDisplay");
+  const statusEl      = document.getElementById("status");
+  const spinBtn       = document.getElementById("spinBtn");
+  const buyInput      = document.getElementById("buyInput");
+  const sellInput     = document.getElementById("sellInput");
+  const buyBtn        = document.getElementById("buyBtn");
+  const sellBtn       = document.getElementById("sellBtn");
+  const tonAddressInp = document.getElementById("tonAddress");
 
-  const cellEls = [
-    document.getElementById("cell1"),
-    document.getElementById("cell2"),
-    document.getElementById("cell3")
-  ];
+  const cellEls = [];
+  for (let i = 1; i <= 9; i++) {
+    cellEls.push(document.getElementById("cell" + i));
+  }
 
-  function updateBalanceDisplay() {
-    balanceEl.textContent = balance.toString();
+  // ─────────────────────────────────────────────
+  // Адрес (сохраняем в localStorage)
+  // ─────────────────────────────────────────────
+  try {
+    const savedAddr = localStorage.getItem("ton21_address");
+    if (savedAddr) tonAddressInp.value = savedAddr;
+  } catch (e) {}
+
+  tonAddressInp.addEventListener("input", () => {
+    try {
+      localStorage.setItem("ton21_address", tonAddressInp.value.trim());
+    } catch (e) {}
+  });
+
+  // ─────────────────────────────────────────────
+  // Обновление UI
+  // ─────────────────────────────────────────────
+  function updateBalances() {
+    chipBalanceEl.textContent = chipBalance.toString();
+    t21BalanceEl.textContent  = t21Balance.toString();
   }
 
   function setStatus(text, type = "") {
@@ -374,14 +475,16 @@
     return symbols[idx];
   }
 
-  // Анимация кручения
+  // ─────────────────────────────────────────────
+  // Анимация слота
+  // ─────────────────────────────────────────────
   function startSpinAnimation() {
     spinInterval = setInterval(() => {
-      cellEls.forEach((el) => {
+      cellEls.forEach(el => {
         const s = randomSymbol();
         el.textContent = s.emoji;
       });
-    }, 80);
+    }, 60);
   }
 
   function stopSpinAnimation() {
@@ -391,9 +494,12 @@
     }
   }
 
+  // ─────────────────────────────────────────────
+  // Логика спина
+  // ─────────────────────────────────────────────
   function handleSpin() {
     if (spinning) return;
-    if (currentBet > balance) {
+    if (currentBet > chipBalance) {
       setStatus("Недостаточно фишек для ставки.", "lose");
       return;
     }
@@ -402,13 +508,12 @@
     spinBtn.classList.add("disabled");
     setStatus("Кручение…");
 
-    // Списываем ставку сразу
-    balance -= currentBet;
-    updateBalanceDisplay();
+    // списываем ставку
+    chipBalance -= currentBet;
+    updateBalances();
 
     startSpinAnimation();
 
-    // Финальный результат через 900 мс (можно менять)
     setTimeout(() => {
       stopSpinAnimation();
 
@@ -417,25 +522,28 @@
         cellEls[i].textContent = s.emoji;
       });
 
-      const [a, b, c] = finalSymbols;
+      // Центральная линия: клетки 4,5,6 (индексы 3,4,5)
+      const center = [finalSymbols[3], finalSymbols[4], finalSymbols[5]];
+      const [a, b, c] = center;
 
       let winAmount = 0;
 
-      // 3 одинаковых
       if (a.emoji === b.emoji && b.emoji === c.emoji) {
         winAmount = Math.round(currentBet * a.multi);
-      }
-      // 2 одинаковых
-      else if (a.emoji === b.emoji || a.emoji === c.emoji || b.emoji === c.emoji) {
+      } else if (
+        a.emoji === b.emoji ||
+        b.emoji === c.emoji ||
+        a.emoji === c.emoji
+      ) {
         winAmount = Math.round(currentBet * 1.5);
       }
 
       if (winAmount > 0) {
-        balance += winAmount;
-        updateBalanceDisplay();
+        chipBalance += winAmount;
+        updateBalances();
         setStatus(`Выигрыш: +${winAmount} фишек!`, "win");
       } else {
-        setStatus("Увы, в этот раз без выигрыша.", "lose");
+        setStatus("Увы, без выигрыша.", "lose");
       }
 
       spinning = false;
@@ -443,28 +551,73 @@
     }, 900);
   }
 
-  // Обработчики ставок
-  document.querySelectorAll(".bet-btn").forEach((btn) => {
+  // ─────────────────────────────────────────────
+  // Ставка
+  // ─────────────────────────────────────────────
+  document.querySelectorAll(".bet-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       const bet = Number(btn.getAttribute("data-bet"));
       currentBet = bet;
       betDisplayEl.textContent = bet.toString();
-      document.querySelectorAll(".bet-btn").forEach((b) => b.classList.remove("active"));
+      document.querySelectorAll(".bet-btn").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
     });
   });
 
   spinBtn.addEventListener("click", handleSpin);
 
-  resetBtn.addEventListener("click", () => {
-    balance = 100;
-    updateBalanceDisplay();
-    setStatus("Баланс сброшен до 100 фишек.");
+  // ─────────────────────────────────────────────
+  // Купить фишки за Ton21
+  // ─────────────────────────────────────────────
+  buyBtn.addEventListener("click", () => {
+    const value = Number(buyInput.value);
+    if (!value || value <= 0) {
+      setStatus("Укажи, сколько Ton21 хочешь потратить.", "lose");
+      return;
+    }
+
+    // Считаем, что игрок уже внёс эти Ton21 (депозит из кошелька).
+    // Мы просто добавляем фишки и учитываем Ton21 внутри игры.
+    t21Balance += value;
+    chipBalance += value * RATE;
+    updateBalances();
+    setStatus(`Куплено ${value * RATE} фишек за ${value} Ton21.`, "win");
+    buyInput.value = "";
   });
 
+  // ─────────────────────────────────────────────
+  // Продать фишки и получить Ton21 (вывод)
+  // ─────────────────────────────────────────────
+  sellBtn.addEventListener("click", () => {
+    const wantT21 = Number(sellInput.value);
+    if (!wantT21 || wantT21 <= 0) {
+      setStatus("Укажи, сколько Ton21 хочешь получить.", "lose");
+      return;
+    }
+    if (wantT21 < MIN_WITHDRAW_T21) {
+      setStatus(`Минимальный вывод: ${MIN_WITHDRAW_T21} Ton21.`, "lose");
+      return;
+    }
+
+    const needChips = wantT21 * RATE;
+
+    if (needChips > chipBalance) {
+      setStatus(`Недостаточно фишек. Нужно ${needChips}, у тебя ${chipBalance}.`, "lose");
+      return;
+    }
+
+    chipBalance -= needChips;
+    t21Balance += wantT21;
+    updateBalances();
+    setStatus(`Продано ${needChips} фишек, получено ${wantT21} Ton21 (внутри игры).`, "win");
+    sellInput.value = "";
+  });
+
+  // ─────────────────────────────────────────────
   // Инициализация
-  updateBalanceDisplay();
-  setStatus("Сделайте ставку и нажмите SPIN.");
+  // ─────────────────────────────────────────────
+  updateBalances();
+  setStatus("Укажи Ton адрес, купи фишки и жми SPIN.");
 </script>
 </body>
 </html>
