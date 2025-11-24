@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
   <title>Ton21 Slot Machine</title>
   <meta name="color-scheme" content="dark light">
+
+  <!-- TonPlay SDK (rewarded ads) -->
+  <script src="https://sdk.tonplay.io/sdk.js"></script>
+
   <style>
     :root{
       --bg:#050811;
@@ -59,6 +63,7 @@
       border-radius:12px;
       background:#090d16;
       border:1px solid rgba(255,255,255,.06);
+      font-size:11px;
     }
     .address-label{
       font-size:11px;
@@ -105,35 +110,18 @@
       margin-top:2px;
     }
 
-    .convert-block{
-      margin-bottom:12px;
-      padding:8px 10px;
-      border-radius:12px;
-      background:#090d16;
-      border:1px solid rgba(255,255,255,.06);
-      font-size:11px;
-    }
-    .convert-row{
+    .actions-top{
       display:flex;
+      flex-wrap:wrap;
       gap:6px;
-      margin-top:6px;
-    }
-    .convert-row input{
-      flex:1;
-      padding:5px 8px;
-      border-radius:8px;
-      border:1px solid rgba(255,255,255,.08);
-      background:#050811;
-      color:var(--txt);
-      font-size:11px;
-      outline:none;
+      margin-bottom:10px;
     }
     .btn{
       border:none;
       outline:none;
       cursor:pointer;
       border-radius:999px;
-      padding:6px 9px;
+      padding:7px 12px;
       font-size:11px;
       background:#141829;
       color:var(--muted);
@@ -150,6 +138,14 @@
       transform:translateY(1px);
       box-shadow:0 0 0 1px rgba(148,95,14,.7),0 4px 12px rgba(0,0,0,.9);
       filter:brightness(.96);
+    }
+    .btn-small{
+      padding:5px 9px;
+      font-size:10px;
+    }
+    .btn.disabled{
+      opacity:.4;
+      pointer-events:none;
     }
 
     .slot-wrapper{
@@ -190,6 +186,12 @@
       box-shadow:
         inset 0 -2px 4px rgba(0,0,0,.8),
         0 4px 10px rgba(0,0,0,.4);
+    }
+    .slot-cell img{
+      max-width:90%;
+      max-height:90%;
+      display:block;
+      border-radius:6px;
     }
     .slot-shadow{
       position:absolute;
@@ -278,7 +280,7 @@
       filter:brightness(.96);
     }
     .spin-btn.disabled{
-      opacity:.4;
+      opacity:.35;
       pointer-events:none;
     }
 
@@ -309,11 +311,11 @@
 <body>
 <div class="app">
   <div class="title">Ton21 Slot Machine</div>
-  <div class="subtitle">Игра на фишках. 1 Ton21 = 100 фишек</div>
+  <div class="subtitle">Рекламная игра на фишках. 1 Ton21 = 100 фишек</div>
 
   <!-- TON адрес игрока -->
   <div class="address-block">
-    <div class="address-label">Ton адрес игрока (для вывода Ton21):</div>
+    <div class="address-label">Ton адрес игрока (для реальных выплат Ton21):</div>
     <input id="tonAddress" class="address-input" placeholder="Например: EQB... или UQ..." />
   </div>
 
@@ -322,48 +324,43 @@
     <div class="balance-card">
       <h4>Баланс фишек</h4>
       <div class="balance-value" id="chipBalance">0</div>
-      <div class="balance-sub">Фишки используются для игры в слот</div>
+      <div class="balance-sub">Фишки используются только внутри игры.</div>
     </div>
     <div class="balance-card">
-      <h4>Баланс Ton21 (внутри игры)</h4>
+      <h4>Учёт Ton21 (в игре)</h4>
       <div class="balance-value" id="t21Balance">0</div>
-      <div class="balance-sub">1 Ton21 = 100 фишек. Вывод от 500 Ton21</div>
+      <div class="balance-sub">Учёт предполагаемых Ton21 после покупки/вывода.</div>
     </div>
   </div>
 
-  <!-- Покупка/продажа фишек -->
-  <div class="convert-block">
-    <div><b>Обмен Ton21 ↔ Фишки</b></div>
-    <div>Курс: <b>1 Ton21 = 100 фишек</b>. Минимум для вывода: <b>500 Ton21</b>.</div>
-
-    <!-- Купить фишки -->
-    <div class="convert-row">
-      <input type="number" id="buyInput" placeholder="Сколько Ton21 потратить на фишки?">
-      <button class="btn btn-primary" id="buyBtn">Купить фишки</button>
-    </div>
-
-    <!-- Продать фишки -->
-    <div class="convert-row">
-      <input type="number" id="sellInput" placeholder="Сколько Ton21 получить за фишки (мин. 500)?">
-      <button class="btn" id="sellBtn">Продать фишки → Ton21</button>
-    </div>
+  <!-- Верхние кнопки -->
+  <div class="actions-top">
+    <button class="btn btn-primary" id="watchAdBtn">
+      Смотреть рекламу 30 секунд → +100 фишек
+    </button>
+    <button class="btn btn-small" id="buyChipsBtn">
+      Купить фишки за Ton21 (через рекламу)
+    </button>
+    <button class="btn btn-small" id="sellChipsBtn">
+      Продать фишки → Ton21 (через рекламу)
+    </button>
   </div>
 
   <!-- Слот -->
   <div class="slot-wrapper">
     <div class="slot-top-label">РЕЗУЛЬТАТ</div>
     <div class="slot-window">
-      <div class="slot-cell" id="cell1">🍒</div>
-      <div class="slot-cell" id="cell2">🍋</div>
-      <div class="slot-cell" id="cell3">💎</div>
+      <div class="slot-cell" id="cell1"></div>
+      <div class="slot-cell" id="cell2"></div>
+      <div class="slot-cell" id="cell3"></div>
 
-      <div class="slot-cell" id="cell4">💎</div>
-      <div class="slot-cell" id="cell5">🍒</div>
-      <div class="slot-cell" id="cell6">⭐</div>
+      <div class="slot-cell" id="cell4"></div>
+      <div class="slot-cell" id="cell5"></div>
+      <div class="slot-cell" id="cell6"></div>
 
-      <div class="slot-cell" id="cell7">🍇</div>
-      <div class="slot-cell" id="cell8">⭐</div>
-      <div class="slot-cell" id="cell9">🍒</div>
+      <div class="slot-cell" id="cell7"></div>
+      <div class="slot-cell" id="cell8"></div>
+      <div class="slot-cell" id="cell9"></div>
     </div>
     <div class="slot-shadow"></div>
   </div>
@@ -376,64 +373,77 @@
         <span id="betDisplay">100</span>
         <div class="bet-buttons">
           <button class="bet-btn active" data-bet="100">100</button>
+          <button class="bet-btn" data-bet="200">200</button>
           <button class="bet-btn" data-bet="500">500</button>
-          <button class="bet-btn" data-bet="1000">1000</button>
         </div>
       </div>
     </div>
-    <button class="spin-btn" id="spinBtn">SPIN</button>
+    <button class="spin-btn disabled" id="spinBtn">SPIN</button>
   </div>
 
   <div id="status" class="status"></div>
 
   <div class="rules">
-    <b>Логика игры:</b><br/>
-    • Игра ведётся на фишки. Фишки покупаются за Ton21 по курсу 1 Ton21 = 100 фишек.<br/>
-    • Проверяется только центральная линия (3 символа по середине).<br/>
-    • 3 одинаковых символа → выигрыш = ставка × множитель (до ×10).<br/>
-    • 2 одинаковых символа по центру → маленький выигрыш (ставка ×1.5).<br/>
-    • Иначе ставка проигрывается.<br/><br/>
-    Балансы и адрес хранятся только в вашем браузере (демо-логика без блокчейна).
+    <b>Логика:</b><br/>
+    • Чтобы начать играть, посмотри рекламный ролик → получишь 100 фишек.<br/>
+    • Игра ведётся на фишки. 1 Ton21 = 100 фишек (для покупок/выводов через рекламу).<br/>
+    • Проверяется только центральная линия (3 символа по центру).<br/>
+    • Обычные символы: фрукты, звезда, алмаз.<br/>
+    • Премиум-символ <b>T21 с короной</b> — самый редкий. 3 по центру дают выигрыш ×20 от ставки.<br/>
+    • 3 одинаковых обычных символа → ставка × их множитель (до ×10).<br/>
+    • 2 одинаковых символа по центру → маленький выигрыш (ставка ×1.5).<br/><br/>
+    Покупка/продажа фишек за Ton21 также требуют просмотра рекламы. Текущая версия — демо, все действия считаются внутриигровым учётом.
   </div>
 </div>
 
 <script>
   // ─────────────────────────────────────────────
+  // TonPlay настройки (заполни своими данными)
+  // ─────────────────────────────────────────────
+  const TONPLAY_APP_ID = "YOUR_TONPLAY_APP_ID";      // TODO: заменить на реальный
+  const TONPLAY_PLACEMENT_ID = "YOUR_PLACEMENT_ID";  // TODO: заменить на реальный
+
+  // ─────────────────────────────────────────────
   // Константы
   // ─────────────────────────────────────────────
-  const RATE = 100;              // 1 Ton21 = 100 фишек
-  const MIN_WITHDRAW_T21 = 500;  // минимальный вывод Ton21
+  const RATE = 100;        // 1 Ton21 = 100 фишек
+  const MIN_WITHDRAW = 500; // минимальный вывод Ton21 (для продажи фишек)
 
-  // Символы (позже можно заменить на PNG-иконки)
+  // Символы: вес используется, чтобы T21 выпадал редко
   const symbols = [
-    { emoji: "🍒", multi: 4 },
-    { emoji: "🍋", multi: 3 },
-    { emoji: "🍇", multi: 5 },
-    { emoji: "⭐", multi: 7 },
-    { emoji: "💎", multi: 10 }
+    { type: "emoji", value: "🍒", multi: 4,  weight: 4 },
+    { type: "emoji", value: "🍋", multi: 3,  weight: 4 },
+    { type: "emoji", value: "🍇", multi: 5,  weight: 3 },
+    { type: "emoji", value: "⭐",  multi: 7,  weight: 2 },
+    { type: "emoji", value: "💎", multi: 10, weight: 2 },
+
+    // Премиум-символ T21 (JPG, чёрный фон + золото)
+    { type: "image", value: "t21.jpg", multi: 20, weight: 1 } // ×20, очень редкий
   ];
 
   // ─────────────────────────────────────────────
-  // Состояние (демо)
+  // Состояние
   // ─────────────────────────────────────────────
-  let chipBalance = 10000; // "Фишек сделай много"
-  let t21Balance = 0;
-  let currentBet = 100;
-  let spinning = false;
+  let chipBalance = 0;
+  let t21Balance  = 0; // учёт возможных Ton21 внутри игры
+  let currentBet  = 100;
+  let spinning    = false;
   let spinInterval = null;
+  let lastAdTime = 0;              // timestamp последней рекламы
+  const AD_COOLDOWN_MS = 30_000;   // 30 секунд между показами (можно увеличить)
 
   // ─────────────────────────────────────────────
-  // DOM элементы
+  // DOM
   // ─────────────────────────────────────────────
   const chipBalanceEl = document.getElementById("chipBalance");
   const t21BalanceEl  = document.getElementById("t21Balance");
   const betDisplayEl  = document.getElementById("betDisplay");
   const statusEl      = document.getElementById("status");
   const spinBtn       = document.getElementById("spinBtn");
-  const buyInput      = document.getElementById("buyInput");
-  const sellInput     = document.getElementById("sellInput");
-  const buyBtn        = document.getElementById("buyBtn");
-  const sellBtn       = document.getElementById("sellBtn");
+
+  const watchAdBtn    = document.getElementById("watchAdBtn");
+  const buyChipsBtn   = document.getElementById("buyChipsBtn");
+  const sellChipsBtn  = document.getElementById("sellChipsBtn");
   const tonAddressInp = document.getElementById("tonAddress");
 
   const cellEls = [];
@@ -442,13 +452,12 @@
   }
 
   // ─────────────────────────────────────────────
-  // Адрес (сохраняем в localStorage)
+  // Адрес (localStorage)
   // ─────────────────────────────────────────────
   try {
     const savedAddr = localStorage.getItem("ton21_address");
     if (savedAddr) tonAddressInp.value = savedAddr;
   } catch (e) {}
-
   tonAddressInp.addEventListener("input", () => {
     try {
       localStorage.setItem("ton21_address", tonAddressInp.value.trim());
@@ -456,11 +465,12 @@
   });
 
   // ─────────────────────────────────────────────
-  // Обновление UI
+  // UI helpers
   // ─────────────────────────────────────────────
   function updateBalances() {
     chipBalanceEl.textContent = chipBalance.toString();
     t21BalanceEl.textContent  = t21Balance.toString();
+    spinBtn.classList.toggle("disabled", chipBalance < currentBet);
   }
 
   function setStatus(text, type = "") {
@@ -470,19 +480,33 @@
     if (type === "lose") statusEl.classList.add("lose");
   }
 
+  function renderSymbol(cell, symbol) {
+    if (symbol.type === "image") {
+      cell.innerHTML = `<img src="${symbol.value}" alt="T21"/>`;
+    } else {
+      cell.textContent = symbol.value;
+    }
+  }
+
   function randomSymbol() {
-    const idx = Math.floor(Math.random() * symbols.length);
-    return symbols[idx];
+    // взвешенный выбор, T21 очень редкий
+    const totalWeight = symbols.reduce((sum, s) => sum + s.weight, 0);
+    let rnd = Math.random() * totalWeight;
+    for (const s of symbols) {
+      if (rnd < s.weight) return s;
+      rnd -= s.weight;
+    }
+    return symbols[0];
   }
 
   // ─────────────────────────────────────────────
-  // Анимация слота
+  // Анимация барабанов
   // ─────────────────────────────────────────────
   function startSpinAnimation() {
     spinInterval = setInterval(() => {
       cellEls.forEach(el => {
         const s = randomSymbol();
-        el.textContent = s.emoji;
+        renderSymbol(el, s);
       });
     }, 60);
   }
@@ -495,20 +519,75 @@
   }
 
   // ─────────────────────────────────────────────
-  // Логика спина
+  // Rewarded Ad helper
   // ─────────────────────────────────────────────
-  function handleSpin() {
-    if (spinning) return;
-    if (currentBet > chipBalance) {
-      setStatus("Недостаточно фишек для ставки.", "lose");
+  function canShowAd() {
+    const now = Date.now();
+    return (now - lastAdTime) > AD_COOLDOWN_MS;
+  }
+
+  function showRewardedAd(onReward) {
+    if (!canShowAd()) {
+      setStatus("Подожди немного перед следующей рекламой.", "lose");
       return;
     }
+
+    // Если TonPlay SDK доступен — вызываем его
+    if (window.TonPlay && window.TonPlay.showRewardedAd) {
+      setStatus("Загрузка рекламного ролика…");
+      window.TonPlay.showRewardedAd({
+        appId: TONPLAY_APP_ID,
+        placementId: TONPLAY_PLACEMENT_ID,
+        onReward: () => {
+          lastAdTime = Date.now();
+          onReward();
+        },
+        onClose: () => {
+          // если пользователь закрыл без награды
+        },
+        onError: (err) => {
+          console.error("TonPlay error:", err);
+          // fallback на фейковый таймер
+          fallbackAd(onReward);
+        }
+      });
+    } else {
+      // нет SDK — фейковый 30-секундный таймер
+      fallbackAd(onReward);
+    }
+  }
+
+  function fallbackAd(onReward) {
+    setStatus("Реклама (демо): 30 секунд…");
+    watchAdBtn.classList.add("disabled");
+    buyChipsBtn.classList.add("disabled");
+    sellChipsBtn.classList.add("disabled");
+
+    let seconds = 30;
+    const timer = setInterval(() => {
+      seconds--;
+      setStatus("Реклама (демо): " + seconds + " сек…");
+      if (seconds <= 0) {
+        clearInterval(timer);
+        lastAdTime = Date.now();
+        watchAdBtn.classList.remove("disabled");
+        buyChipsBtn.classList.remove("disabled");
+        sellChipsBtn.classList.remove("disabled");
+        onReward();
+      }
+    }, 1000);
+  }
+
+  // ─────────────────────────────────────────────
+  // Игра: спин
+  // ─────────────────────────────────────────────
+  function handleSpin() {
+    if (spinning || chipBalance < currentBet) return;
 
     spinning = true;
     spinBtn.classList.add("disabled");
     setStatus("Кручение…");
 
-    // списываем ставку
     chipBalance -= currentBet;
     updateBalances();
 
@@ -518,38 +597,43 @@
       stopSpinAnimation();
 
       const finalSymbols = cellEls.map(() => randomSymbol());
-      finalSymbols.forEach((s, i) => {
-        cellEls[i].textContent = s.emoji;
-      });
+      finalSymbols.forEach((s, i) => renderSymbol(cellEls[i], s));
 
-      // Центральная линия: клетки 4,5,6 (индексы 3,4,5)
+      // центральная линия: 4,5,6 (индексы 3,4,5)
       const center = [finalSymbols[3], finalSymbols[4], finalSymbols[5]];
       const [a, b, c] = center;
 
       let winAmount = 0;
 
-      if (a.emoji === b.emoji && b.emoji === c.emoji) {
+      if (a.type === "image" && b.type === "image" && c.type === "image" &&
+          a.value === "t21.jpg" && b.value === "t21.jpg" && c.value === "t21.jpg") {
+        // супер rare: 3 T21 по центру
+        winAmount = currentBet * 20; // множитель ×20
+      } else if (a.type === b.type && b.type === c.type &&
+                 a.value === b.value && b.value === c.value) {
+        // 3 одинаковых обычных символа
         winAmount = Math.round(currentBet * a.multi);
       } else if (
-        a.emoji === b.emoji ||
-        b.emoji === c.emoji ||
-        a.emoji === c.emoji
+        (a.value === b.value) ||
+        (b.value === c.value) ||
+        (a.value === c.value)
       ) {
         winAmount = Math.round(currentBet * 1.5);
       }
 
       if (winAmount > 0) {
         chipBalance += winAmount;
-        updateBalances();
         setStatus(`Выигрыш: +${winAmount} фишек!`, "win");
       } else {
         setStatus("Увы, без выигрыша.", "lose");
       }
 
+      updateBalances();
       spinning = false;
-      spinBtn.classList.remove("disabled");
     }, 900);
   }
+
+  spinBtn.addEventListener("click", handleSpin);
 
   // ─────────────────────────────────────────────
   // Ставка
@@ -561,63 +645,70 @@
       betDisplayEl.textContent = bet.toString();
       document.querySelectorAll(".bet-btn").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
+      updateBalances();
     });
   });
 
-  spinBtn.addEventListener("click", handleSpin);
-
   // ─────────────────────────────────────────────
-  // Купить фишки за Ton21
+  // Кнопка: смотреть рекламу → +100 фишек
   // ─────────────────────────────────────────────
-  buyBtn.addEventListener("click", () => {
-    const value = Number(buyInput.value);
-    if (!value || value <= 0) {
-      setStatus("Укажи, сколько Ton21 хочешь потратить.", "lose");
-      return;
-    }
-
-    // Считаем, что игрок уже внёс эти Ton21 (депозит из кошелька).
-    // Мы просто добавляем фишки и учитываем Ton21 внутри игры.
-    t21Balance += value;
-    chipBalance += value * RATE;
-    updateBalances();
-    setStatus(`Куплено ${value * RATE} фишек за ${value} Ton21.`, "win");
-    buyInput.value = "";
+  watchAdBtn.addEventListener("click", () => {
+    showRewardedAd(() => {
+      chipBalance += 100;
+      setStatus("Реклама просмотрена. Начислено +100 фишек.", "win");
+      updateBalances();
+    });
   });
 
   // ─────────────────────────────────────────────
-  // Продать фишки и получить Ton21 (вывод)
+  // Купить фишки за Ton21 (через рекламу)
   // ─────────────────────────────────────────────
-  sellBtn.addEventListener("click", () => {
-    const wantT21 = Number(sellInput.value);
-    if (!wantT21 || wantT21 <= 0) {
-      setStatus("Укажи, сколько Ton21 хочешь получить.", "lose");
-      return;
-    }
-    if (wantT21 < MIN_WITHDRAW_T21) {
-      setStatus(`Минимальный вывод: ${MIN_WITHDRAW_T21} Ton21.`, "lose");
-      return;
-    }
+  buyChipsBtn.addEventListener("click", () => {
+    showRewardedAd(() => {
+      const amountStr = prompt("Сколько Ton21 пользователь оплатил? (вручную, после транзакции)");
+      const amount = Number(amountStr);
+      if (!amount || amount <= 0) {
+        setStatus("Покупка отменена.", "lose");
+        return;
+      }
+      t21Balance += amount;
+      chipBalance += amount * RATE;
+      setStatus(`Зачислено ${amount * RATE} фишек за ${amount} Ton21.`, "win");
+      updateBalances();
+    });
+  });
 
-    const needChips = wantT21 * RATE;
-
-    if (needChips > chipBalance) {
-      setStatus(`Недостаточно фишек. Нужно ${needChips}, у тебя ${chipBalance}.`, "lose");
-      return;
-    }
-
-    chipBalance -= needChips;
-    t21Balance += wantT21;
-    updateBalances();
-    setStatus(`Продано ${needChips} фишек, получено ${wantT21} Ton21 (внутри игры).`, "win");
-    sellInput.value = "";
+  // ─────────────────────────────────────────────
+  // Продать фишки → Ton21 (через рекламу)
+  // ─────────────────────────────────────────────
+  sellChipsBtn.addEventListener("click", () => {
+    showRewardedAd(() => {
+      const wantStr = prompt(`Сколько Ton21 вывести? (мин. ${MIN_WITHDRAW})`);
+      const want = Number(wantStr);
+      if (!want || want < MIN_WITHDRAW) {
+        setStatus(`Минимальный вывод: ${MIN_WITHDRAW} Ton21.`, "lose");
+        return;
+      }
+      const needChips = want * RATE;
+      if (needChips > chipBalance) {
+        setStatus(`Недостаточно фишек. Нужно ${needChips}, у тебя ${chipBalance}.`, "lose");
+        return;
+      }
+      chipBalance -= needChips;
+      t21Balance -= want; // учёт уменьшения (по сути, отправка пользователю)
+      if (t21Balance < 0) t21Balance = 0;
+      setStatus(`Продано ${needChips} фишек. Выведи ${want} Ton21 на указанный адрес.`, "win");
+      updateBalances();
+    });
   });
 
   // ─────────────────────────────────────────────
   // Инициализация
   // ─────────────────────────────────────────────
+  // нарисуем случайные символы для красоты
+  cellEls.forEach(el => renderSymbol(el, randomSymbol()));
   updateBalances();
-  setStatus("Укажи Ton адрес, купи фишки и жми SPIN.");
+  setStatus("Смотри рекламу, получай фишки и жми SPIN.");
 </script>
 </body>
 </html>
